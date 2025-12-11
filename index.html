@@ -2,775 +2,760 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POKENGINEER v5.0</title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>POKENGINEER v10.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-deep: #050505;
-            --panel-bg: rgba(20, 20, 25, 0.95);
+            --bg-deep: #020205;
+            --panel-bg: rgba(10, 15, 20, 0.95);
             --neon-blue: #00f3ff;
+            --neon-green: #00ff9d;
             --neon-pink: #ff0055;
             --neon-gold: #ffd700;
-            --neon-green: #00ff9d;
-            --text-dim: #888;
-            --grid-line: rgba(0, 243, 255, 0.1);
-            --font-main: 'Share Tech Mono', monospace;
+            --neon-purple: #bd00ff;
+            --font-head: 'Orbitron', sans-serif;
+            --font-body: 'Rajdhani', sans-serif;
+            
+            /* TYPE COLORS */
+            --c-fuego: #ff3333; --c-agua: #33ccff; --c-planta: #66ff66;
+            --c-mech: #e0e0e0; --c-elec: #ffee33;
         }
 
         body {
-            background-color: #000;
-            color: var(--neon-blue);
-            font-family: var(--font-main);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-            /* Fondo de rejilla estilo TRON/Blueprint */
+            background: #000; margin: 0; height: 100dvh;
+            display: flex; justify-content: center; align-items: center; overflow: hidden;
+            font-family: var(--font-body); color: #fff;
             background-image: 
-                linear-gradient(var(--grid-line) 1px, transparent 1px),
-                linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-            background-size: 30px 30px;
+                linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
 
         #device {
-            width: 100%;
-            max-width: 480px;
-            height: 95vh;
-            border: 2px solid var(--neon-blue);
-            border-radius: 10px;
-            background: radial-gradient(circle at center, #1a1a24 0%, #000 100%);
-            box-shadow: 0 0 40px rgba(0, 243, 255, 0.15);
-            display: flex;
-            flex-direction: column;
-            position: relative;
-            overflow: hidden;
+            width: 100%; max-width: 480px; height: 100%;
+            border: 3px solid var(--neon-blue); border-radius: 8px;
+            background: radial-gradient(circle at center, #111 0%, #000 120%);
+            display: flex; flex-direction: column; position: relative;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.15);
+            transition: border-color 0.3s;
         }
 
-        /* --- CINEMATICS & INTRO --- */
-        #cinematic-layer {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: #000;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            box-sizing: border-box;
-            transition: opacity 0.5s;
-        }
-
-        /* Avatar Holográfico CSS */
-        .holo-avatar {
-            width: 120px;
-            height: 120px;
-            border: 2px solid var(--neon-blue);
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 60px;
-            background: rgba(0, 243, 255, 0.1);
-            box-shadow: 0 0 20px var(--neon-blue);
-            margin-bottom: 20px;
-            animation: holoPulse 2s infinite alternate;
-            position: relative;
-        }
-        .holo-avatar::after {
-            content: '';
-            position: absolute;
-            width: 100%; height: 5px;
-            background: rgba(0, 243, 255, 0.5);
-            animation: scanline 2s linear infinite;
-            top: 0;
-            opacity: 0.5;
-        }
-
-        .dialog-box {
-            width: 100%;
-            background: var(--panel-bg);
-            border: 1px solid var(--neon-blue);
-            padding: 15px;
-            margin-top: 20px;
-            min-height: 100px;
-            border-radius: 5px;
-            position: relative;
-        }
-        
-        .dialog-text {
-            font-size: 16px;
-            line-height: 1.4;
-            color: #fff;
-            text-shadow: 0 0 5px var(--neon-blue);
-        }
-
-        .next-btn {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            background: var(--neon-blue);
-            color: #000;
-            border: none;
-            padding: 5px 15px;
-            font-family: var(--font-main);
-            font-weight: bold;
-            cursor: pointer;
-            animation: blink 1s infinite;
-        }
-
-        /* --- GAME UI --- */
+        /* HEADER */
         header {
-            background: rgba(0,0,0,0.8);
-            border-bottom: 1px solid var(--neon-blue);
-            padding: 10px;
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            text-transform: uppercase;
+            padding: 10px; border-bottom: 2px solid rgba(255,255,255,0.1);
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.8); z-index: 10;
         }
+        .header-title { font-family: var(--font-head); color: var(--neon-blue); font-size: 14px; letter-spacing: 2px; }
+        .cr-badge { color: var(--neon-gold); font-weight: bold; font-size: 18px; text-shadow: 0 0 5px var(--neon-gold); }
 
-        /* --- BATTLE AREA --- */
+        /* ARENA */
         #arena {
-            flex-grow: 1;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            position: relative;
+            flex-grow: 1; position: relative;
+            display: flex; flex-direction: column; justify-content: space-between;
+            padding: 20px; overflow: hidden;
         }
 
-        .mon-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
+        .mon-container { position: relative; width: 100%; display: flex; flex-direction: column; }
+        .mon-container.enemy { align-items: flex-end; }
+        .mon-container.player { align-items: flex-start; }
+
+        .sprite {
+            font-size: 100px; filter: drop-shadow(0 0 15px rgba(255,255,255,0.3));
+            transition: transform 0.2s; z-index: 5;
         }
-        .mon-row.enemy { flex-direction: row-reverse; align-self: flex-end; }
+        .float { animation: floating 3s ease-in-out infinite; }
+        @keyframes floating { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
         
-        .sprite-container {
-            width: 90px;
-            height: 90px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 60px;
-            filter: drop-shadow(0 0 10px rgba(255,255,255,0.3));
-            animation: float 3s ease-in-out infinite;
+        /* SHINY EFFECT */
+        .shiny { 
+            filter: hue-rotate(180deg) drop-shadow(0 0 15px var(--neon-gold)) !important; 
+            animation: floating 2s ease-in-out infinite alternate;
         }
+
+        /* HUD MEJORADO */
+        .hud-box {
+            background: rgba(0,0,0,0.8); border: 1px solid #444;
+            padding: 8px; border-radius: 4px; width: 170px;
+            backdrop-filter: blur(4px); margin-bottom: -10px; z-index: 6;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .hud-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .mon-name { font-family: var(--font-head); font-size: 14px; text-transform: uppercase; color:#fff; }
+        .mon-lvl { font-family: var(--font-head); font-size: 14px; color: var(--neon-gold); }
         
-        .shiny { filter: hue-rotate(180deg) drop-shadow(0 0 15px var(--neon-gold)) !important; }
-
-        .stat-card {
-            background: rgba(0,0,0,0.6);
-            border: 1px solid var(--text-dim);
-            padding: 5px 10px;
-            border-radius: 4px;
-            min-width: 120px;
-        }
-
-        .bar-wrap { height: 6px; background: #333; margin-top: 4px; border-radius: 2px; overflow: hidden; }
-        .bar-hp { height: 100%; background: linear-gradient(90deg, #ff4d4d, #ff9966); transition: width 0.3s; }
-        .bar-xp { height: 4px; background: linear-gradient(90deg, #00c6ff, #0072ff); margin-top:2px; }
-
-        /* --- LOG CONSOLE --- */
-        #console-wrapper {
-            height: 100px;
-            background: rgba(0,0,0,0.9);
-            border-top: 1px solid var(--neon-blue);
-            border-bottom: 1px solid var(--neon-blue);
-            padding: 10px;
-            overflow-y: auto;
-            font-size: 13px;
-            display: flex;
-            flex-direction: column-reverse; /* Newest at bottom visually, handled by JS prepending */
-        }
+        .hp-track { width: 100%; height: 8px; background: #222; border: 1px solid #555; border-radius: 2px; overflow: hidden; }
+        .hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ff3333, #ffaa00, #00ff00); transition: width 0.4s ease-out; }
         
-        .log-msg { margin-bottom: 4px; border-left: 2px solid #333; padding-left: 8px; }
-        .log-new { border-left-color: var(--neon-green); color: #fff; animation: slideIn 0.3s; }
-        .log-crit { border-left-color: var(--neon-pink); color: var(--neon-pink); }
-
-        /* --- CONTROLS --- */
-        #controls {
-            padding: 10px;
-            background: #0b0b0b;
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 8px;
-            height: 160px;
-        }
-        
-        button {
-            background: #111;
-            border: 1px solid #444;
-            color: var(--neon-blue);
-            font-family: var(--font-main);
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        button:hover { background: #222; border-color: var(--neon-blue); color: #fff; }
-        
-        .action-btn { font-size: 14px; position: relative; }
-        .type-label { font-size: 9px; position: absolute; bottom: 2px; right: 4px; opacity: 0.7; }
-
-        /* --- MODALS --- */
-        .modal {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
-            z-index: 50;
-            display: none;
-            flex-direction: column;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .modal.active { display: flex; }
-
-        .list-item {
-            display: flex;
-            align-items: center;
-            background: #111;
-            border: 1px solid #333;
-            margin-bottom: 5px;
-            padding: 8px;
-        }
-        .list-item.fav { border-color: var(--neon-gold); }
-        .star-btn { font-size: 20px; cursor: pointer; margin-right: 10px; color: #444; }
-        .star-btn.active { color: var(--neon-gold); text-shadow: 0 0 5px var(--neon-gold); }
-
-        /* --- SETTINGS BTN --- */
-        #settings-btn {
-            position: absolute;
-            top: 10px; right: 10px;
-            background: transparent; border: none;
-            color: #555; font-size: 16px; cursor: pointer;
-            z-index: 200;
-        }
-        #settings-btn:hover { color: var(--neon-pink); }
+        .type-tag { font-size: 9px; padding: 1px 4px; border-radius: 2px; color: #000; font-weight: bold; margin-top: 4px; display: inline-block; }
 
         /* ANIMATIONS */
-        @keyframes holoPulse { from { opacity: 0.8; box-shadow: 0 0 10px var(--neon-blue); } to { opacity: 1; box-shadow: 0 0 25px var(--neon-blue); } }
-        @keyframes scanline { 0% { top: 0%; } 100% { top: 100%; } }
-        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-        @keyframes slideIn { from{transform:translateX(-10px); opacity:0;} to{transform:translateX(0); opacity:1;} }
-        @keyframes shake { 0%{transform:translate(0)} 25%{transform:translate(-5px)} 75%{transform:translate(5px)} 100%{transform:translate(0)} }
-        .shake { animation: shake 0.4s; }
+        @keyframes attackRight { 0%{transform:translateX(0)} 50%{transform:translateX(100px)} 100%{transform:translateX(0)} }
+        @keyframes attackLeft { 0%{transform:translateX(0)} 50%{transform:translateX(-100px)} 100%{transform:translateX(0)} }
+        @keyframes shake { 0%{transform:translate(0)} 25%{transform:translate(5px)} 75%{transform:translate(-5px)} 100%{transform:translate(0)} }
+        .attacking-right { animation: attackRight 0.3s ease-in-out !important; }
+        .attacking-left { animation: attackLeft 0.3s ease-in-out !important; }
+        .hit { animation: shake 0.4s !important; filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5) !important; }
 
-        /* BOSS ALERT */
-        #boss-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 0, 85, 0.2);
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            pointer-events: none;
+        /* CONSOLA DE DIÁLOGO NEON */
+        #dialogue-box {
+            height: 90px; min-height: 90px; background: rgba(5, 10, 15, 0.98);
+            border-top: 2px solid var(--neon-blue); border-bottom: 1px solid #333;
+            padding: 10px 15px; display: flex; flex-direction: column-reverse; overflow-y: auto;
+            font-size: 15px; line-height: 1.5; letter-spacing: 0.5px;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
         }
-        .boss-text {
-            font-size: 40px; color: var(--neon-pink); font-weight: bold;
-            text-shadow: 0 0 10px var(--neon-pink);
-            transform: rotate(-10deg);
-            border: 4px solid var(--neon-pink);
-            padding: 10px 40px;
-            background: #000;
+        .log-entry { margin-bottom: 6px; border-left: 3px solid #333; padding-left: 8px; animation: slideIn 0.3s; }
+        @keyframes slideIn { from{opacity:0; transform:translateX(-10px)} to{opacity:1; transform:translateX(0)} }
+        
+        .log-txt { color: #ccc; }
+        .log-move { color: #fff; font-weight: bold; text-shadow: 0 0 5px #fff; }
+        .log-dmg { color: var(--neon-pink); font-weight: bold; font-family: var(--font-head); }
+        .log-crit { color: var(--neon-gold); font-weight: bold; text-shadow: 0 0 8px var(--neon-gold); text-transform: uppercase; }
+        .log-eff { color: var(--neon-green); font-weight: bold; text-shadow: 0 0 8px var(--neon-green); }
+        .log-weak { color: #888; font-style: italic; }
+        .log-capture { color: var(--neon-purple); font-weight: bold; text-shadow: 0 0 10px var(--neon-purple); border-left-color: var(--neon-purple) !important; }
+        .log-heal { color: #00ff9d; font-weight: bold; border-left-color: #00ff9d !important; }
+
+        /* CONTROLS */
+        #controls {
+            background: #050505; padding: 10px; border-top: 1px solid #333;
+            display: grid; grid-template-columns: 2fr 1fr; gap: 8px;
+            height: 160px; flex-shrink: 0;
         }
+        .move-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        
+        .atk-btn {
+            background: #111; border: 1px solid #444; color: #aaa;
+            display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
+            padding: 8px; cursor: pointer; position: relative; transition: 0.2s;
+        }
+        .atk-btn:hover:not(:disabled) { background: #222; border-color: var(--neon-blue); color: #fff; }
+        .atk-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .atk-name { font-weight: bold; font-size: 13px; }
+        .pp-badge { font-size: 10px; color: #666; margin-top: 2px; }
+        .type-dot { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; }
+
+        .sys-grid { display: grid; grid-template-rows: 1fr 1fr; gap: 5px; }
+        .sys-btn {
+            background: #151515; border: 1px solid #333; color: #fff;
+            font-family: var(--font-head); font-size: 16px; letter-spacing: 1px;
+            cursor: pointer; text-transform: uppercase;
+        }
+        .sys-btn:hover { border-color: var(--neon-green); color: var(--neon-green); }
+
+        /* MODALS */
+        .modal {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: rgba(0,0,0,0.98); z-index: 50; display: none;
+            flex-direction: column; padding: 20px; box-sizing: border-box;
+        }
+        .modal-header { font-family: var(--font-head); font-size: 24px; color: var(--neon-blue); margin-bottom: 15px; border-bottom: 1px solid #333; }
+        
+        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; overflow-y: auto; }
+        .shop-card {
+            background: #111; border: 1px solid #333; padding: 10px; border-radius: 5px;
+            display: flex; flex-direction: column; align-items: center; text-align: center;
+        }
+        .buy-btn { width: 100%; padding: 5px; margin-top: 5px; background: #222; border: 1px solid var(--neon-green); color: var(--neon-green); cursor: pointer; }
+
+        /* --- VISUALES DE INICIO --- */
+        .full-screen {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: #000; z-index: 100; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; text-align: center; padding: 30px; box-sizing: border-box;
+        }
+        
+        /* Animación de Reactor (Núcleo) */
+        .reactor-container {
+            position: relative; width: 180px; height: 180px; margin-bottom: 30px;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .reactor-ring {
+            position: absolute; width: 100%; height: 100%;
+            border: 4px dashed var(--neon-blue); border-radius: 50%;
+            animation: spin 10s linear infinite;
+        }
+        .reactor-ring-2 {
+            position: absolute; width: 80%; height: 80%;
+            border: 2px solid var(--neon-purple); border-radius: 50%;
+            border-left-color: transparent; border-right-color: transparent;
+            animation: spin 5s linear infinite reverse;
+        }
+        .reactor-core {
+            width: 50%; height: 50%;
+            background: radial-gradient(circle, var(--neon-blue), transparent);
+            border-radius: 50%;
+            box-shadow: 0 0 30px var(--neon-blue);
+            animation: pulseCore 2s infinite ease-in-out;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 40px;
+        }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes pulseCore { 0%,100% { transform: scale(0.9); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 50px var(--neon-blue); } }
+        @keyframes glitch { 0% { transform: translate(0); } 20% { transform: translate(-2px, 2px); } 40% { transform: translate(-2px, -2px); } 60% { transform: translate(2px, 2px); } 80% { transform: translate(2px, -2px); } 100% { transform: translate(0); } }
+
+        .glitch-text {
+            font-family: var(--font-head); font-size: 45px; color: #fff;
+            text-shadow: 2px 2px var(--neon-pink), -2px -2px var(--neon-blue);
+            animation: glitch 3s infinite alternate-reverse;
+            margin-bottom: 10px;
+        }
+
+        .story-box {
+            background: rgba(10, 20, 30, 0.95);
+            border: 1px solid var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+            padding: 20px; border-radius: 10px; width: 100%; max-width: 400px;
+            margin-top: 20px; text-align: left;
+        }
+        .story-text { font-size: 18px; line-height: 1.6; color: #eee; min-height: 80px; }
+        .next-story-btn {
+            background: var(--neon-blue); color: #000; border: none; padding: 10px 25px;
+            font-weight: bold; font-family: var(--font-head); cursor: pointer;
+            float: right; margin-top: 10px;
+            animation: pulseCore 2s infinite;
+        }
+
+        input { background: #111; border: 1px solid var(--neon-blue); color: #fff; padding: 15px; width: 100%; margin: 10px 0; text-align: center; font-size: 18px; font-family: var(--font-body); }
     </style>
 </head>
 <body>
 
 <div id="device">
     
-    <button id="settings-btn" onclick="confirmReset()">⚙️ REINICIAR</button>
-
-    <!-- INTRO LAYER -->
-    <div id="cinematic-layer">
-        <div class="holo-avatar">👨‍💻</div>
-        <h2 style="color:var(--neon-blue); margin:0; text-shadow:0 0 10px var(--neon-blue);">ING. ATLAS</h2>
-        <div style="font-size:10px; color:#666; letter-spacing:2px; margin-bottom:20px;">JEFE DE OPERACIONES I+D</div>
-        
-        <div class="dialog-box">
-            <div class="dialog-text" id="intro-text"></div>
-            <button class="next-btn" id="intro-next-btn" onclick="nextIntro()">CONTINUAR >></button>
+    <!-- LOGIN LAYER (REDISEÑADO) -->
+    <div id="login-screen" class="full-screen">
+        <div class="reactor-container">
+            <div class="reactor-ring"></div>
+            <div class="reactor-ring-2"></div>
+            <div class="reactor-core">⚡</div>
         </div>
+        
+        <h1 class="glitch-text">POKENGINEER</h1>
+        <p style="color:var(--neon-green); letter-spacing: 3px; font-weight: bold;">SISTEMAS DE CONTROL v10.0</p>
+        
+        <div style="margin-top:40px; width:100%;">
+            <input type="text" id="inp-name" placeholder="ID INGENIERO">
+            <input type="date" id="inp-dob">
+        </div>
+        <button onclick="login()" style="margin-top:20px; padding:15px 40px; background:transparent; border:2px solid var(--neon-blue); color:var(--neon-blue); font-weight:bold; cursor:pointer; font-size: 18px; font-family: var(--font-head);">INICIAR TURNO</button>
+    </div>
 
-        <div id="starter-choice" style="display:none; gap:20px; margin-top:20px;">
-            <button onclick="pickStarter(0)" style="padding:15px; font-size:24px;">🔥 A</button>
-            <button onclick="pickStarter(1)" style="padding:15px; font-size:24px;">💧 B</button>
-            <button onclick="pickStarter(2)" style="padding:15px; font-size:24px;">🌿 C</button>
+    <!-- INTRO LAYER (HISTORIA POKENGINEER) -->
+    <div id="intro-screen" class="full-screen" style="display:none; justify-content: center;">
+        <h2 style="color:var(--neon-pink); font-family:var(--font-head); text-shadow: 0 0 10px var(--neon-pink);">ALERTA DE SISTEMA</h2>
+        
+        <div class="story-box">
+            <p id="intro-text" class="story-text"></p>
+            
+            <!-- Selector oculto al principio -->
+            <div id="starter-select" style="display:none; gap:10px; justify-content:center; margin-top:20px;">
+                <div onclick="pickStarter(0)" style="border:1px solid #333; padding:15px; cursor:pointer; width:30%; text-align:center; background:rgba(0,0,0,0.5);">
+                    <div style="font-size:40px;">🔥</div>
+                    <div style="color:var(--c-fuego); font-weight:bold;">IGNIS</div>
+                </div>
+                <div onclick="pickStarter(1)" style="border:1px solid #333; padding:15px; cursor:pointer; width:30%; text-align:center; background:rgba(0,0,0,0.5);">
+                    <div style="font-size:40px;">💧</div>
+                    <div style="color:var(--c-agua); font-weight:bold;">AQUA</div>
+                </div>
+                <div onclick="pickStarter(2)" style="border:1px solid #333; padding:15px; cursor:pointer; width:30%; text-align:center; background:rgba(0,0,0,0.5);">
+                    <div style="font-size:40px;">🌿</div>
+                    <div style="color:var(--c-planta); font-weight:bold;">TERRA</div>
+                </div>
+            </div>
+
+            <button id="intro-btn" class="next-story-btn" onclick="nextIntro()">CONFIRMAR >></button>
         </div>
     </div>
 
     <!-- GAME HEADER -->
     <header>
-        <div>ACTIVO: <span id="head-active">...</span></div>
-        <div>FASE: <span id="head-stage">1</span></div>
-        <div style="color:var(--neon-gold)">CR: <span id="head-cr">0</span></div>
+        <div>
+            <span class="header-title">ING. <span id="ui-name">USER</span></span>
+            <button onclick="if(confirm('¿Reiniciar sistema?')) location.reload()" style="background:none; border:none; color:#555; cursor:pointer;">⚙️</button>
+        </div>
+        <div class="cr-badge">💎 <span id="ui-cr">0</span></div>
     </header>
 
-    <!-- BATTLE ARENA -->
+    <!-- ARENA -->
     <div id="arena">
-        <div id="boss-overlay"><div class="boss-text">ALERTA JEFE</div></div>
-
         <!-- Enemy -->
-        <div class="mon-row enemy">
-            <div class="sprite-container" id="enemy-sprite">🤖</div>
-            <div class="stat-card">
-                <div style="display:flex; justify-content:space-between; font-size:12px;">
-                    <span id="enemy-name">Enemy</span>
-                    <span style="color:var(--neon-pink)">Nv.<span id="enemy-lvl">1</span></span>
+        <div class="mon-container enemy">
+            <div class="hud-box">
+                <div class="hud-row">
+                    <span id="enemy-name" class="mon-name">ENEMY</span>
+                    <span id="enemy-lvl" class="mon-lvl">Nv.1</span>
                 </div>
-                <div class="bar-wrap"><div class="bar-hp" id="enemy-hp"></div></div>
+                <div class="hp-track"><div id="enemy-hp-bar" class="hp-fill"></div></div>
+                <span id="enemy-type" class="type-tag" style="background:#fff;">TYPE</span>
             </div>
+            <div id="enemy-sprite" class="sprite float">🤖</div>
         </div>
 
         <!-- Player -->
-        <div class="mon-row player" style="margin-top:auto;">
-            <div class="sprite-container" id="player-sprite">🤠</div>
-            <div class="stat-card">
-                <div style="display:flex; justify-content:space-between; font-size:12px;">
-                    <span id="player-name">Player</span>
-                    <span style="color:var(--neon-green)">Nv.<span id="player-lvl">1</span></span>
+        <div class="mon-container player">
+            <div id="player-sprite" class="sprite float">🤠</div>
+            <div class="hud-box">
+                <div class="hud-row">
+                    <span id="player-name" class="mon-name">PLAYER</span>
+                    <span id="player-lvl" class="mon-lvl">Nv.1</span>
                 </div>
-                <div class="bar-wrap"><div class="bar-hp" id="player-hp"></div></div>
-                <div style="text-align:right; font-size:10px; color:#aaa;"><span id="player-hp-txt"></span></div>
-                <div class="bar-wrap" style="height:4px; margin-top:4px;"><div class="bar-xp" id="player-xp"></div></div>
+                <div class="hp-track"><div id="player-hp-bar" class="hp-fill"></div></div>
+                <div class="hud-row">
+                    <span id="player-type" class="type-tag" style="background:#fff;">TYPE</span>
+                    <span id="player-hp-txt" style="font-size:10px;">100/100</span>
+                </div>
             </div>
+        </div>
+        
+        <div id="boss-alert" style="display:none; position:absolute; top:45%; width:100%; text-align:center; z-index:20;">
+            <h1 style="background:rgba(255,0,0,0.9); padding:20px; text-shadow:0 0 10px red; border: 2px solid red;">⚠️ ANOMALÍA MASIVA ⚠️</h1>
         </div>
     </div>
 
-    <!-- LOG CONSOLE -->
-    <div id="console-wrapper">
-        <div class="log-msg">Sistema de batalla iniciado...</div>
+    <!-- DIALOGUE (NEON) -->
+    <div id="dialogue-box">
+        <div class="log-entry log-txt">Terminal de mando lista...</div>
     </div>
 
     <!-- CONTROLS -->
     <div id="controls">
-        <div id="combat-menu" style="display:grid; grid-template-columns:1fr 1fr; gap:5px;">
-            <!-- Buttons injected here -->
-        </div>
-        
-        <div id="system-menu" style="display:grid; grid-template-rows:1fr 1fr; gap:5px;">
-            <button onclick="openTeam()" style="border-color:var(--neon-blue);">👥 EQUIPO / FAV</button>
-            <button onclick="attemptCatch()" style="border-color:var(--neon-gold); color:var(--neon-gold);">📦 CAPTURAR</button>
-        </div>
-
-        <!-- Boss Defeat Menu (Hidden by default) -->
-        <div id="loss-menu" style="display:none; grid-column:1/-1; text-align:center;">
-            <div style="color:var(--neon-pink); margin-bottom:10px;">¡MISIÓN FALLIDA! EL JEFE ES DEMASIADO FUERTE.</div>
-            <button onclick="startTraining()" style="width:100%; padding:15px; background:var(--neon-green); color:#000;">🏋️ ENTRENAMIENTO SIMULADO (GRIND)</button>
+        <div id="combat-grid" class="move-grid"></div>
+        <div class="sys-grid">
+            <button class="sys-btn" onclick="openBag()" style="border-color:var(--neon-green);">🎒 MOCHILA</button>
+            <button class="sys-btn" onclick="openTeam()" style="border-color:var(--neon-blue);">👥 EQUIPO</button>
         </div>
     </div>
 
-    <!-- MODAL TEAM -->
+    <!-- MODALS -->
+    <div id="modal-bag" class="modal">
+        <div class="modal-header">SUMINISTROS</div>
+        <div style="display:flex; gap:10px; margin-bottom:10px;">
+            <button onclick="showShopTab('inventory')" style="flex:1; padding:5px;">INV</button>
+            <button onclick="showShopTab('shop')" style="flex:1; padding:5px; background:var(--neon-blue); color:#000;">TIENDA</button>
+        </div>
+        <div id="shop-container" class="shop-grid" style="display:none;"></div>
+        <div id="inv-container" class="shop-grid"></div>
+        <button onclick="closeModal('modal-bag')" style="margin-top:auto; padding:15px; background:#333; color:#fff; border:none;">CERRAR</button>
+    </div>
+
     <div id="modal-team" class="modal">
-        <h3 style="color:var(--neon-blue); border-bottom:1px solid #333;">GESTIÓN DE ACTIVOS</h3>
-        <p style="font-size:10px; color:#666;">⭐ = Favorito (Prioridad en lista)</p>
-        <div id="team-list" style="flex-grow:1; overflow-y:auto;"></div>
-        <button onclick="closeTeam()" style="padding:15px; margin-top:10px;">CERRAR</button>
+        <div class="modal-header">MATRIZ DE UNIDADES</div>
+        <div id="team-list" style="flex-grow:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
+        <button onclick="closeModal('modal-team')" style="margin-top:10px; padding:15px; background:#333; color:#fff; border:none;">VOLVER</button>
     </div>
 
 </div>
 
 <script>
-    /* === DATABASE === */
+    /* === DATABASE & CONFIG === */
     const TYPES = { FUEGO:'fuego', AGUA:'agua', PLANTA:'planta', MECH:'mech', ELEC:'elec' };
-    const MOVES = {
-        'fuego': ['Llamarada', 'Fundición', 'Soldar', 'Quemar'],
-        'agua': ['Presión', 'Hidráulica', 'Purga', 'Refrigerar'],
-        'planta': ['Biomasa', 'Raíz', 'Cosecha', 'Espina'],
-        'mech': ['Prensa', 'Taladro', 'Tuerca', 'Ensamblar'],
-        'elec': ['Voltaje', 'Corto', 'Carga', 'Rayo']
+    const TYPE_COLORS = { fuego:'#ff3333', agua:'#33ccff', planta:'#66ff66', mech:'#e0e0e0', elec:'#ffee33' };
+    
+    const CHART = {
+        fuego: { planta:2, mech:2, agua:0.5 }, agua: { fuego:2, mech:0.5, planta:0.5 },
+        planta: { agua:2, elec:2, fuego:0.5 }, elec: { agua:2, mech:2, elec:0.5 }, mech: { planta:2, fuego:0.5 }
     };
+
+    // MOVIMIENTOS EXPANDIDOS
+    const MOVES_DB = {
+        // FUEGO
+        'Llamarada': { t:TYPES.FUEGO, pp:5, pwr:90 }, 'Fundición': { t:TYPES.FUEGO, pp:10, pwr:60 },
+        'Inferno': { t:TYPES.FUEGO, pp:5, pwr:110 }, 'Fusión': { t:TYPES.FUEGO, pp:3, pwr:140 },
+        // AGUA
+        'Hidropresión': { t:TYPES.AGUA, pp:5, pwr:90 }, 'Purga': { t:TYPES.AGUA, pp:15, pwr:40 },
+        'Tsunami': { t:TYPES.AGUA, pp:5, pwr:110 }, 'Cero Absoluto': { t:TYPES.AGUA, pp:3, pwr:140 },
+        // PLANTA
+        'Rayo Solar': { t:TYPES.PLANTA, pp:5, pwr:100 }, 'Espinas': { t:TYPES.PLANTA, pp:15, pwr:40 },
+        'Bosque Profundo': { t:TYPES.PLANTA, pp:5, pwr:110 }, 'Gaia': { t:TYPES.PLANTA, pp:3, pwr:140 },
+        // MECH
+        'Taladro': { t:TYPES.MECH, pp:5, pwr:85 }, 'Prensa': { t:TYPES.MECH, pp:10, pwr:60 },
+        'Láser Orbital': { t:TYPES.MECH, pp:5, pwr:120 }, 'Reconfiguración': { t:TYPES.MECH, pp:3, pwr:150 },
+        // ELEC
+        'Sobrecarga': { t:TYPES.ELEC, pp:5, pwr:95 }, 'Chispazo': { t:TYPES.ELEC, pp:15, pwr:45 },
+        'Plasma': { t:TYPES.ELEC, pp:5, pwr:110 }, 'Tormenta': { t:TYPES.ELEC, pp:3, pwr:140 }
+    };
+
+    // SISTEMA DE APRENDIZAJE (Level: Move)
+    const LEARNSETS = {
+        fuego: { 8: 'Inferno', 12: 'Fundición', 16: 'Fusión' },
+        agua: { 8: 'Tsunami', 12: 'Hidropresión', 16: 'Cero Absoluto' },
+        planta: { 8: 'Bosque Profundo', 12: 'Rayo Solar', 16: 'Gaia' },
+        mech: { 8: 'Láser Orbital', 12: 'Taladro', 16: 'Reconfiguración' },
+        elec: { 8: 'Plasma', 12: 'Sobrecarga', 16: 'Tormenta' }
+    };
+
+    // BASE DE DATOS EXTENDIDA (30+ Pokes)
     const DEX = [
-        {id:0, n:"CalderaBot", t:TYPES.FUEGO, s:"🔥"},
-        {id:1, n:"HydroPump", t:TYPES.AGUA, s:"💧"},
-        {id:2, n:"BioGen", t:TYPES.PLANTA, s:"🌿"},
-        {id:3, n:"LogicGate", t:TYPES.ELEC, s:"💾"},
-        {id:4, n:"Conveyor", t:TYPES.MECH, s:"⚙️"},
-        {id:5, n:"SolarPanel", t:TYPES.ELEC, s:"☀️"},
-        {id:6, n:"CementMixer", t:TYPES.MECH, s:"🏗️"},
-        {id:7, n:"FiberOptic", t:TYPES.ELEC, s:"✨"},
-        {id:8, n:"RustyPipe", t:TYPES.AGUA, s:"🚰"},
-        {id:9, n:"Recycler", t:TYPES.PLANTA, s:"♻️"},
-        {id:10, n:"Turbine", t:TYPES.AGUA, s:"🌀"},
-        {id:11, n:"ToxicWaste", t:TYPES.PLANTA, s:"☣️"},
-        {id:12, n:"Mainframe", t:TYPES.ELEC, s:"🖥️"},
-        {id:99, n:"OMEGA-BOSS", t:TYPES.MECH, s:"👹", boss:true}
+        // FUEGO
+        {id:0, n:"Ignis Core", t:TYPES.FUEGO, s:"🔥", moves:['Llamarada', 'Fundición']},
+        {id:1, n:"Pyro Bot", t:TYPES.FUEGO, s:"🌋", moves:['Fundición', 'Inferno']},
+        {id:2, n:"Magma Gear", t:TYPES.FUEGO, s:"🧨", moves:['Llamarada', 'Fusión']},
+        {id:3, n:"Solar Flare", t:TYPES.FUEGO, s:"☀️", moves:['Inferno', 'Fusión']},
+        {id:4, n:"Ember Unit", t:TYPES.FUEGO, s:"🕯️", moves:['Fundición', 'Llamarada']},
+        {id:5, n:"Ash Crawler", t:TYPES.FUEGO, s:"🦂", moves:['Fundición', 'Inferno']},
+        // AGUA
+        {id:6, n:"Aqua Flow", t:TYPES.AGUA, s:"💧", moves:['Hidropresión', 'Purga']},
+        {id:7, n:"Hydro Pump", t:TYPES.AGUA, s:"🚿", moves:['Purga', 'Tsunami']},
+        {id:8, n:"Ice Node", t:TYPES.AGUA, s:"🧊", moves:['Cero Absoluto', 'Hidropresión']},
+        {id:9, n:"Steam Valve", t:TYPES.AGUA, s:"🌫️", moves:['Purga', 'Tsunami']},
+        {id:10, n:"Liquid Metal", t:TYPES.AGUA, s:"🧪", moves:['Hidropresión', 'Cero Absoluto']},
+        {id:11, n:"Deep Dive", t:TYPES.AGUA, s:"⚓", moves:['Tsunami', 'Purga']},
+        // PLANTA
+        {id:12, n:"Terra Node", t:TYPES.PLANTA, s:"🌿", moves:['Rayo Solar', 'Espinas']},
+        {id:13, n:"Bio Moss", t:TYPES.PLANTA, s:"🦠", moves:['Espinas', 'Bosque Profundo']},
+        {id:14, n:"Vine Cable", t:TYPES.PLANTA, s:"🎍", moves:['Rayo Solar', 'Gaia']},
+        {id:15, n:"Spore Cloud", t:TYPES.PLANTA, s:"🍄", moves:['Espinas', 'Bosque Profundo']},
+        {id:16, n:"Root Main", t:TYPES.PLANTA, s:"🌳", moves:['Gaia', 'Rayo Solar']},
+        {id:17, n:"Leaf Circuit", t:TYPES.PLANTA, s:"🍃", moves:['Bosque Profundo', 'Espinas']},
+        // MECH
+        {id:18, n:"Gear MK1", t:TYPES.MECH, s:"⚙️", moves:['Taladro', 'Prensa']},
+        {id:19, n:"Iron Hull", t:TYPES.MECH, s:"🛡️", moves:['Prensa', 'Láser Orbital']},
+        {id:20, n:"Drill Bit", t:TYPES.MECH, s:"🔩", moves:['Taladro', 'Reconfiguración']},
+        {id:21, n:"Cyber Claw", t:TYPES.MECH, s:"🦾", moves:['Prensa', 'Taladro']},
+        {id:22, n:"Nano Swarm", t:TYPES.MECH, s:"🧱", moves:['Láser Orbital', 'Reconfiguración']},
+        {id:23, n:"Steel Core", t:TYPES.MECH, s:"🪙", moves:['Prensa', 'Láser Orbital']},
+        // ELEC
+        {id:24, n:"Volt Unit", t:TYPES.ELEC, s:"⚡", moves:['Sobrecarga', 'Chispazo']},
+        {id:25, n:"Spark Plug", t:TYPES.ELEC, s:"🔌", moves:['Chispazo', 'Plasma']},
+        {id:26, n:"Thunder Coil", t:TYPES.ELEC, s:"🌀", moves:['Sobrecarga', 'Tormenta']},
+        {id:27, n:"Battery Pack", t:TYPES.ELEC, s:"🔋", moves:['Chispazo', 'Plasma']},
+        {id:28, n:"Static Field", t:TYPES.ELEC, s:"📡", moves:['Tormenta', 'Sobrecarga']},
+        {id:29, n:"Neon Pulse", t:TYPES.ELEC, s:"💡", moves:['Plasma', 'Chispazo']},
+        // BOSSES
+        {id:99, n:"MEGA SYSTEM", t:TYPES.MECH, s:"👹", boss:true, moves:['Taladro', 'Sobrecarga']},
+        {id:100, n:"GIGA VOLT", t:TYPES.ELEC, s:"🌩️", boss:true, moves:['Tormenta', 'Plasma']},
+        {id:101, n:"TERRA PRIME", t:TYPES.PLANTA, s:"🌍", boss:true, moves:['Gaia', 'Bosque Profundo']}
     ];
 
-    /* === GAME STATE === */
-    let state = {
-        credits: 100,
-        stage: 1, // Progression
-        team: [],
-        activeIdx: 0,
-        enemy: null,
-        mode: 'intro', // intro, battle, boss, grind
-        introStep: 0,
-        turn: true
+    const ITEMS_DB = {
+        'ball': { n:"Esfera Std", price:50, icon:"🔴" }, 
+        'great': { n:"Esfera Tech", price:200, icon:"🔵" },
+        'ultra': { n:"Esfera Zero", price:1000, icon:"🟣" }, 
+        'potion': { n:"Refrigerante", price:100, icon:"💊" },
+        'full': { n:"Restauración Total", price:300, icon:"💎" }, // NUEVO
+        'revive': { n:"Reboot Kit", price:200, icon:"🔋" }
     };
 
-    /* === INTRO SYSTEM === */
-    const introLines = [
-        "Iniciando secuencia de arranque... [OK]",
-        "Bienvenido, Ingeniero. Soy Atlas, el administrador de esta planta.",
-        "Nuestra misión es la eficiencia total mediante batallas automatizadas.",
-        "Necesito que selecciones un prototipo inicial de la línea de ensamblaje.",
-        "CHOICE",
-        "Excelente. Tu ID ha sido registrado. Comencemos la Fase 1."
-    ];
+    /* === STATE === */
+    let game = { name:"Ing", credits:500, stage:1, team:[], activeIdx:0, enemy:null, turn:true, inv:{ball:5,great:1,ultra:0,potion:3,full:1,revive:1}, introStep:0 };
 
+    /* === LOGIN & INTRO === */
+    function login() {
+        const name = document.getElementById('inp-name').value;
+        const dob = document.getElementById('inp-dob').value;
+        if(!name || !dob) return alert("Fichaje incompleto.");
+        game.name = name.substring(0,8).toUpperCase();
+        document.getElementById('ui-name').innerText = game.name;
+        
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('intro-screen').style.display = 'flex';
+        
+        // Historia POKENGINEER
+        introLines[0] = `Bienvenido a la Planta, Ing. ${game.name}.`;
+        nextIntro();
+    }
+
+    // HISTORIA POKENGINEER
+    const introLines = [
+        "...",
+        "...", 
+        "La Red Energética Global está saturada por anomalías llamadas 'Pokes'.",
+        "Tu trabajo es simple: Capturarlos para reducir la carga del sistema.",
+        "Pero ten cuidado, cada 10 ciclos aparece un 'Jefe de Planta' que amenaza con fundir el núcleo.",
+        "Selecciona tu herramienta de trabajo inicial.",
+        "CHOICE", 
+        "Herramienta asignada. Turno iniciado."
+    ];
+    
     function nextIntro() {
         const txt = document.getElementById('intro-text');
-        const btn = document.getElementById('intro-next-btn');
-        
-        if (state.introStep >= introLines.length) {
-            // End Intro
-            document.getElementById('cinematic-layer').style.opacity = 0;
-            setTimeout(() => {
-                document.getElementById('cinematic-layer').style.display = 'none';
-                initBattle(false); // Normal battle start
-            }, 500);
-            return;
+        const btn = document.getElementById('intro-btn');
+        if(game.introStep >= introLines.length) {
+            document.getElementById('intro-screen').style.display = 'none';
+            initBattle(); return;
         }
-
-        const line = introLines[state.introStep];
-        
-        if (line === "CHOICE") {
-            txt.innerText = "Por favor, selecciona una unidad.";
+        if(introLines[game.introStep] === "CHOICE") {
+            txt.innerText = "ACCESO AL ARSENAL AUTORIZADO. ELIGE:"; 
             btn.style.display = 'none';
-            document.getElementById('starter-choice').style.display = 'flex';
+            document.getElementById('starter-select').style.display = 'flex';
         } else {
-            // Typewriter effect simple
-            txt.innerText = line;
-            state.introStep++;
+            txt.innerText = introLines[game.introStep]; game.introStep++;
         }
     }
 
     function pickStarter(id) {
-        state.team.push(createMon(id, 5));
-        document.getElementById('starter-choice').style.display = 'none';
-        document.getElementById('intro-next-btn').style.display = 'block';
-        state.introStep++; // Skip choice placeholder
-        nextIntro();
+        game.team.push(createMon(id, 5));
+        document.getElementById('starter-select').style.display = 'none';
+        document.getElementById('intro-btn').style.display = 'block';
+        game.introStep++; nextIntro();
     }
 
-    // Start with first line
-    nextIntro();
-
-    /* === CORE ENGINE === */
-    function createMon(id, lvl, isShinyOverride=false) {
-        const proto = DEX[id];
-        const isShiny = isShinyOverride || Math.random() < 0.1;
-        const moves = MOVES[proto.t];
-        
-        return {
-            ...proto,
-            lvl: lvl,
-            maxHp: 50 + (lvl * 12) + (proto.boss ? 200 : 0),
-            hp: 50 + (lvl * 12) + (proto.boss ? 200 : 0),
-            xp: 0,
-            xpNext: 100 * lvl,
-            moves: moves,
-            shiny: isShiny,
-            fav: false // Favorito
-        };
+    /* === ENGINE === */
+    function createMon(id, lvl, shiny=false) {
+        const p = DEX.find(x => x.id === id) || DEX[4];
+        // SHINY RATE: 30% (0.3)
+        const isShiny = shiny || Math.random() < 0.3;
+        // Build moves
+        const myMoves = p.moves.map(n => ({...MOVES_DB[n], name:n, maxPP:MOVES_DB[n].pp}));
+        return { ...p, n:p.n, lvl:lvl, maxHp: 50+lvl*15+(p.boss?300:0), hp: 50+lvl*15+(p.boss?300:0), xp:0, xpNext:50+lvl*20, moves:myMoves, shiny:isShiny };
     }
 
-    function initBattle(isGrind = false) {
-        state.mode = isGrind ? 'grind' : 'battle';
-        state.turn = true;
-        
-        // Reset controls
-        document.getElementById('combat-menu').style.display = 'grid';
-        document.getElementById('system-menu').style.display = 'grid';
-        document.getElementById('loss-menu').style.display = 'none';
-
-        // Check Boss Gate
-        if (!isGrind && state.stage % 10 === 0) {
-            state.mode = 'boss';
-            spawnBoss();
+    function initBattle() {
+        game.turn = true;
+        if(game.stage % 10 === 0) {
+            // Rotar Jefes (99, 100, 101)
+            const bossId = 99 + (Math.floor((game.stage/10)-1) % 3);
+            game.enemy = createMon(bossId, game.stage+5); game.enemy.n = "JEFE DE PLANTA #" + (game.stage/10);
+            document.getElementById('boss-alert').style.display = 'block';
+            setTimeout(()=>document.getElementById('boss-alert').style.display='none', 3000);
         } else {
-            spawnRandomEnemy(isGrind);
+            const id = Math.floor(Math.random()*30); // 0-29
+            const lvl = Math.max(1, game.team[game.activeIdx].lvl + Math.floor(Math.random()*2)-1);
+            game.enemy = createMon(id, lvl);
         }
-        
+        log(`Señal detectada: ¡${game.enemy.n} en el sector!`);
+        if(game.enemy.shiny) log(`<span class='log-crit'>¡ANOMALÍA CROMÁTICA (SHINY) DETECTADA!</span>`);
         updateUI();
     }
 
-    function spawnBoss() {
-        log("⚠️ ALERTA: Señal de Gran Magnitud detectada.", "crit");
-        document.getElementById('boss-overlay').style.display = 'flex';
+    /* === COMBAT & LEARNING === */
+    function attack(i) {
+        if(!game.turn) return;
+        const p = game.team[game.activeIdx];
+        const m = p.moves[i];
+        if(m.pp <= 0) return alert("Sin energía (PP).");
         
-        // Create scaled boss
-        state.enemy = createMon(13, state.stage + 5); 
-        state.enemy.n = "BOSS MK-" + (state.stage/10);
-        
-        setTimeout(() => document.getElementById('boss-overlay').style.display = 'none', 2000);
-    }
+        m.pp--;
+        document.getElementById('device').style.borderColor = TYPE_COLORS[m.t];
+        document.getElementById('player-sprite').classList.add('attacking-right');
+        setTimeout(()=>document.getElementById('player-sprite').classList.remove('attacking-right'), 300);
 
-    function spawnRandomEnemy(isGrind) {
-        const id = Math.floor(Math.random() * 13);
-        // If grinding, enemies are slightly weaker than current stage
-        const lvlBase = isGrind ? state.team[state.activeIdx].lvl : state.stage;
-        const lvl = Math.max(1, lvlBase + Math.floor(Math.random()*3)-1);
-        
-        state.enemy = createMon(id, lvl);
-        log(`Iniciando combate: ${state.enemy.n} (Nv.${lvl}) detectado.`);
-        if(state.enemy.shiny) log("¡VARIACIÓN SHINY DETECTADA! (Recompensa x3)", "crit");
-    }
-
-    /* === COMBAT SYSTEM === */
-    function attack(moveIdx) {
-        if(!state.turn) return;
-
-        const p = state.team[state.activeIdx];
-        const e = state.enemy;
-        const moveName = p.moves[moveIdx];
-
-        // Player Attack
-        const dmg = Math.floor(p.lvl * 2.5 + 10 + Math.random()*5);
-        e.hp -= dmg;
-        animateShake('enemy-sprite');
-        log(`> ${p.n} usó ${moveName}. Daño: ${dmg}`);
-
-        if(e.hp <= 0) {
-            e.hp = 0;
-            winBattle();
-            return;
-        }
-
-        // Enemy Turn Delay
-        state.turn = false;
-        updateUI();
+        const e = game.enemy;
+        let mult = CHART[m.t]?.[e.t] || 1;
+        const dmg = Math.floor((p.lvl*0.5 + m.pwr*0.2) * mult * ((Math.random()*0.4)+0.8));
         
         setTimeout(() => {
-            const eDmg = Math.floor(e.lvl * 2 + 5);
-            p.hp -= eDmg;
-            animateShake('player-sprite');
-            log(`> Enemigo atacó. Daño: ${eDmg}`, "crit");
+            e.hp -= dmg;
+            document.getElementById('enemy-sprite').classList.add('hit');
+            setTimeout(()=>document.getElementById('enemy-sprite').classList.remove('hit'), 400);
             
-            if(p.hp <= 0) {
-                p.hp = 0;
-                log(`¡${p.n} ha colapsado!`, "crit");
-                // Check if team has others
-                const alive = state.team.some(m => m.hp > 0);
-                if(!alive) {
-                    loseBattle();
+            let msg = `<span class='log-txt'>> ${p.n} activa</span> <span class='log-move'>${m.name}</span> <span class='log-dmg'>-${dmg}HP</span>`;
+            if(mult > 1) msg += " <span class='log-eff'>¡EFECTIVO!</span>";
+            if(mult < 1) msg += " <span class='log-weak'>Resistido</span>";
+            log(msg);
+            
+            document.getElementById('device').style.borderColor = 'var(--neon-blue)';
+
+            if(e.hp <= 0) { e.hp = 0; winBattle(); return; }
+            endTurn();
+        }, 300);
+    }
+
+    function endTurn() {
+        game.turn = false; updateUI();
+        setTimeout(() => {
+            const e = game.enemy, p = game.team[game.activeIdx];
+            if(e.hp <= 0) return;
+            
+            const m = e.moves[Math.floor(Math.random()*e.moves.length)];
+            const dmg = Math.floor((e.lvl*0.5 + m.pwr*0.2) * ((Math.random()*0.4)+0.8));
+            
+            document.getElementById('enemy-sprite').classList.add('attacking-left');
+            setTimeout(()=>document.getElementById('enemy-sprite').classList.remove('attacking-left'), 300);
+            
+            setTimeout(() => {
+                p.hp -= dmg;
+                document.getElementById('player-sprite').classList.add('hit');
+                setTimeout(()=>document.getElementById('player-sprite').classList.remove('hit'), 400);
+                log(`<span class='log-txt'>> ${e.n} responde con</span> <span class='log-move'>${m.name}</span> <span class='log-crit'>-${dmg}HP</span>`);
+                
+                if(p.hp <= 0) {
+                    p.hp = 0;
+                    if(!game.team.some(m=>m.hp>0)) { alert("SISTEMA CRÍTICO. REINICIANDO..."); location.reload(); }
+                    else openTeam();
+                }
+                game.turn = true; updateUI();
+            }, 300);
+        }, 1000);
+    }
+
+    function winBattle(cap=false) {
+        const e = game.enemy, p = game.team[game.activeIdx];
+        const r = 50 + e.lvl*10;
+        game.credits += r;
+        if(!cap) log(`<span class='log-eff'>AMENAZA ELIMINADA. +${r} CR.</span>`);
+        
+        // XP & LEVEL UP
+        p.xp += r;
+        if(p.xp >= p.xpNext) {
+            p.lvl++; p.xp=0; p.maxHp+=10; p.hp=p.maxHp;
+            log(`<span class='log-crit'>¡${p.n} OPTIMIZADO A NIVEL ${p.lvl}!</span>`);
+            
+            // CHECK LEARNSET
+            const newMoveName = LEARNSETS[p.t]?.[p.lvl];
+            if(newMoveName) {
+                const moveData = MOVES_DB[newMoveName];
+                const newMoveObj = { ...moveData, name: newMoveName, maxPP: moveData.pp };
+                
+                if(p.moves.length < 4) {
+                    p.moves.push(newMoveObj);
+                    log(`<span class='log-eff'>¡Módulo ${newMoveName} instalado!</span>`);
                 } else {
-                    openTeam(); // Force swap
+                    const forgot = p.moves.shift(); 
+                    p.moves.push(newMoveObj);
+                    log(`<span class='log-eff'>¡${forgot.name} eliminado. ${newMoveName} instalado!</span>`);
                 }
             }
-            state.turn = true;
-            updateUI();
-        }, 1000);
-    }
-
-    function winBattle() {
-        const e = state.enemy;
-        const isBoss = state.mode === 'boss';
-        
-        let reward = isBoss ? 500 : (30 + e.lvl * 5);
-        if(e.shiny) reward *= 3;
-        
-        state.credits += reward;
-        log(`COMBATE FINALIZADO. Ganaste ${reward} CR.`);
-        
-        // XP Logic
-        const p = state.team[state.activeIdx];
-        const xpGain = isBoss ? 500 : (50 + e.lvl * 10);
-        p.xp += xpGain;
-        if(p.xp >= p.xpNext) {
-            p.lvl++;
-            p.xp = 0;
-            p.maxHp += 15;
-            p.hp = p.maxHp;
-            log(`¡NIVEL UP! ${p.n} sube a Nv.${p.lvl}.`);
         }
 
-        if(state.mode === 'battle' || state.mode === 'boss') {
-            state.stage++;
-        }
-        
-        setTimeout(() => initBattle(false), 2000);
+        if(!game.enemy.boss || cap) game.stage++;
+        setTimeout(() => initBattle(), 2000);
     }
 
-    function loseBattle() {
-        log("TODAS LAS UNIDADES FUERA DE SERVICIO.", "crit");
-        // Partial heal
-        state.team.forEach(m => m.hp = Math.floor(m.maxHp * 0.5));
-        
-        if(state.mode === 'boss') {
-            document.getElementById('combat-menu').style.display = 'none';
-            document.getElementById('system-menu').style.display = 'none';
-            document.getElementById('loss-menu').style.display = 'block';
-            log("No puedes avanzar hasta vencer al Jefe.", "crit");
-        } else {
-            log("Retirada táctica. Reiniciando encuentro...");
-            setTimeout(() => initBattle(false), 2000);
-        }
-    }
-
-    function attemptCatch() {
-        if(state.mode === 'boss') { log("¡No puedes capturar a un JEFE!", "crit"); return; }
-        if(state.credits < 50) { log("Fondos insuficientes (Req: 50 CR).", "crit"); return; }
-
-        state.credits -= 50;
-        const chance = (1 - (state.enemy.hp / state.enemy.maxHp)) * 2;
-        log("Lanzando cápsula de contención...");
-        
-        setTimeout(() => {
-            if(Math.random() < chance) {
-                log("¡CAPTURA EXITOSA! Unidad añadida al inventario.");
-                state.enemy.hp = state.enemy.maxHp;
-                state.team.push(state.enemy);
-                winBattle(); // Count as win but capture
-            } else {
-                log("Fallo en la captura.");
-                state.turn = false;
-                setTimeout(() => { state.turn = true; log("Turno enemigo saltado (aturdido)."); updateUI(); }, 800);
-            }
-            updateUI();
-        }, 1000);
-    }
-
-    function startTraining() {
-        log("Iniciando simulación de entrenamiento...");
-        initBattle(true); // Grind mode
-    }
-
-    /* === UI & UTILS === */
-    function log(msg, type="norm") {
-        const wrap = document.getElementById('console-wrapper');
+    /* === UI UTILS === */
+    function log(html) {
+        const box = document.getElementById('dialogue-box');
         const div = document.createElement('div');
-        div.className = `log-msg ${type === 'crit' ? 'log-crit' : 'log-new'}`;
-        div.innerText = msg;
-        wrap.insertBefore(div, wrap.firstChild); // Prepend
-    }
-
-    function animateShake(id) {
-        const el = document.getElementById(id);
-        el.classList.add('shake');
-        setTimeout(()=>el.classList.remove('shake'), 400);
+        div.className = 'log-entry';
+        div.innerHTML = html;
+        box.insertBefore(div, box.firstChild);
     }
 
     function updateUI() {
-        // Header
-        document.getElementById('head-stage').innerText = state.stage;
-        document.getElementById('head-cr').innerText = state.credits;
-        document.getElementById('head-active').innerText = state.team[state.activeIdx].n;
-
-        // Player
-        const p = state.team[state.activeIdx];
-        document.getElementById('player-name').innerText = p.n;
-        document.getElementById('player-lvl').innerText = p.lvl;
-        document.getElementById('player-sprite').innerText = p.s;
-        if(p.shiny) document.getElementById('player-sprite').classList.add('shiny');
-        else document.getElementById('player-sprite').classList.remove('shiny');
-
-        const pHp = (p.hp / p.maxHp)*100;
-        document.getElementById('player-hp').style.width = `${pHp}%`;
-        document.getElementById('player-hp-txt').innerText = `${p.hp}/${p.maxHp}`;
-        document.getElementById('player-xp').style.width = `${(p.xp/p.xpNext)*100}%`;
-
-        // Enemy
-        const e = state.enemy;
-        document.getElementById('enemy-name').innerText = e.n;
-        document.getElementById('enemy-lvl').innerText = e.lvl;
-        document.getElementById('enemy-sprite').innerText = e.s;
-        if(e.shiny) document.getElementById('enemy-sprite').classList.add('shiny');
-        else document.getElementById('enemy-sprite').classList.remove('shiny');
-
-        const eHp = (e.hp / e.maxHp)*100;
-        document.getElementById('enemy-hp').style.width = `${eHp}%`;
-
-        // Buttons
-        const grid = document.getElementById('combat-menu');
+        document.getElementById('ui-cr').innerText = game.credits;
+        const p = game.team[game.activeIdx], e = game.enemy;
+        
+        // Render HUDs
+        renderHUD('player', p); renderHUD('enemy', e);
+        
+        // Render Moves
+        const grid = document.getElementById('combat-grid');
         grid.innerHTML = '';
         p.moves.forEach((m, i) => {
             const btn = document.createElement('button');
-            btn.className = 'action-btn';
-            btn.innerHTML = `${m} <span class="type-label">${p.t}</span>`;
+            btn.className = 'atk-btn'; btn.disabled = m.pp <= 0;
+            const c = TYPE_COLORS[m.t];
+            btn.innerHTML = `<div class="atk-name" style="color:${c}">${m.name}</div><div class="pp-badge">PP:${m.pp}/${m.maxPP}</div><div class="type-dot" style="background:${c}"></div>`;
             btn.onclick = () => attack(i);
             grid.appendChild(btn);
         });
     }
 
-    /* === TEAM MANAGEMENT === */
-    function openTeam() {
-        const list = document.getElementById('team-list');
-        list.innerHTML = '';
+    function renderHUD(side, mon) {
+        document.getElementById(side+'-name').innerText = mon.n;
+        document.getElementById(side+'-lvl').innerText = "Nv." + mon.lvl;
+        document.getElementById(side+'-sprite').innerText = mon.s;
+        if(mon.shiny) document.getElementById(side+'-sprite').classList.add('shiny');
+        else document.getElementById(side+'-sprite').classList.remove('shiny');
+        
+        const tag = document.getElementById(side+'-type');
+        tag.innerText = mon.t; tag.style.background = TYPE_COLORS[mon.t];
+        
+        const pct = (mon.hp / mon.maxHp)*100;
+        document.getElementById(side+'-hp-bar').style.width = pct + '%';
+        if(side === 'player') document.getElementById('player-hp-txt').innerText = `${mon.hp}/${mon.maxHp}`;
+    }
 
-        // Sort: Active > Fav > Others
-        const sorted = state.team.map((m, i) => ({...m, orgIdx: i}))
-            .sort((a, b) => {
-                if(a.orgIdx === state.activeIdx) return -1;
-                if(b.orgIdx === state.activeIdx) return 1;
-                return Number(b.fav) - Number(a.fav);
-            });
+    /* === SHOP & TEAM === */
+    function openBag() { document.getElementById('modal-bag').style.display='flex'; showShopTab('inventory'); }
+    function showShopTab(tab) {
+        document.getElementById('shop-container').style.display = tab==='shop'?'grid':'none';
+        document.getElementById('inv-container').style.display = tab==='inventory'?'grid':'none';
+        const c = document.getElementById(tab==='shop'?'shop-container':'inv-container');
+        c.innerHTML = '';
+        const src = tab==='shop' ? ITEMS_DB : game.inv;
+        
+        for(let key in src) {
+            if(tab==='inventory' && src[key] <= 0) continue;
+            const item = ITEMS_DB[key]; 
+            c.innerHTML += `
+                <div class="shop-card">
+                    <div style="font-size:30px;">${item.icon}</div>
+                    <div style="font-weight:bold;">${item.n}</div>
+                    <div style="font-size:10px; color:#888;">${tab==='shop'?item.price+' CR':'Cant: '+src[key]}</div>
+                    <button class="buy-btn" onclick="${tab==='shop'?`buy('${key}')`:`use('${key}')`}">${tab==='shop'?'COMPRAR':'USAR'}</button>
+                </div>`;
+        }
+    }
 
-        sorted.forEach(m => {
-            const row = document.createElement('div');
-            row.className = `list-item ${m.fav ? 'fav' : ''}`;
+    function buy(k) {
+        if(game.credits < ITEMS_DB[k].price) return alert("Fondos insuficientes.");
+        game.credits -= ITEMS_DB[k].price; game.inv[k]++;
+        document.getElementById('ui-cr').innerText = game.credits;
+        showShopTab('shop');
+    }
+
+    function use(k) {
+        // Capture
+        if(['ball','great','ultra'].includes(k)) {
+            if(!game.turn) return alert("Espera tu turno.");
+            game.inv[k]--;
+            closeModal('modal-bag');
+            log(`Lanzando ${ITEMS_DB[k].n}...`);
+            if(game.enemy.boss && k!=='ultra') { log("<span class='log-crit'>¡ERROR! Jefe inmune a captura estándar.</span>"); endTurn(); return; }
             
-            // Star Btn
-            const star = document.createElement('span');
-            star.className = `star-btn ${m.fav ? 'active' : ''}`;
-            star.innerHTML = '★';
-            star.onclick = (e) => {
-                e.stopPropagation();
-                toggleFav(m.orgIdx);
-            };
+            const rate = k==='great'?2 : k==='ultra'?100 : 1;
+            const chance = (1 - (game.enemy.hp/game.enemy.maxHp)) * rate;
+            setTimeout(() => {
+                if(Math.random() < chance) { 
+                    log("<span class='log-capture'>¡UNIDAD ASIMILADA EXITOSAMENTE!</span>"); 
+                    
+                    // LÓGICA DE CAPTURA MEJORADA: VIDA COMPLETA
+                    game.enemy.hp = game.enemy.maxHp; 
+                    game.team.push(game.enemy); 
+                    
+                    winBattle(true); 
+                }
+                else { log("<span class='log-weak'>Fallo en la contención.</span>"); endTurn(); }
+            }, 1000);
+        } else {
+            // Potion/Revive/Full
+            closeModal('modal-bag'); openTeam(false, true, k);
+        }
+    }
 
-            const info = document.createElement('div');
-            info.style.flexGrow = 1;
-            info.innerHTML = `
-                <div>${m.s} <strong>${m.n}</strong> (Nv.${m.lvl})</div>
-                <div style="font-size:10px; color:#888;">HP: ${m.hp}/${m.maxHp} ${m.orgIdx === state.activeIdx ? '[ACTIVO]' : ''}</div>
-            `;
-            
-            // Click row to swap
-            row.onclick = () => swapMon(m.orgIdx);
-
-            row.appendChild(star);
-            row.appendChild(info);
-            list.appendChild(row);
+    let pendingItem = null;
+    function openTeam(swap=false, select=false, item=null) {
+        pendingItem = item;
+        const l = document.getElementById('team-list'); l.innerHTML = '';
+        game.team.forEach((m,i) => {
+            const div = document.createElement('div');
+            div.style.background='#111'; div.style.padding='10px'; div.style.display='flex'; div.style.justifyContent='space-between'; div.style.alignItems='center';
+            div.innerHTML = `<div>${m.s} <strong>${m.n}</strong> Nv.${m.lvl} <br><small>HP:${m.hp}/${m.maxHp}</small></div>
+                ${select ? `<button onclick="applyItem(${i})">USAR</button>` : (m.hp>0 && i!==game.activeIdx ? `<button onclick="swap(${i})">CAMBIAR</button>` : '')}`;
+            l.appendChild(div);
         });
-
         document.getElementById('modal-team').style.display = 'flex';
     }
 
-    function toggleFav(realIdx) {
-        state.team[realIdx].fav = !state.team[realIdx].fav;
-        openTeam(); // Re-render
-    }
-
-    function swapMon(realIdx) {
-        if(state.team[realIdx].hp <= 0) {
-            alert("Esta unidad necesita reparaciones.");
-            return;
+    function applyItem(i) {
+        const m = game.team[i];
+        if(pendingItem==='potion') {
+            m.hp = Math.min(m.maxHp, m.hp+50);
+            log(`<span class='log-heal'>Reparado parcial: ${m.n}</span>`);
         }
-        state.activeIdx = realIdx;
-        closeTeam();
-        updateUI();
-        log(`Unidad desplegada: ${state.team[realIdx].n}`);
-    }
-
-    function closeTeam() {
-        document.getElementById('modal-team').style.display = 'none';
-    }
-
-    /* === SYSTEM === */
-    function confirmReset() {
-        if(confirm("¿ESTÁS SEGURO? Esto borrará todo tu progreso de fábrica.")) {
-            location.reload();
+        else if(pendingItem==='revive') {
+            m.hp = Math.floor(m.maxHp/2);
+            log(`<span class='log-heal'>Reiniciado: ${m.n}</span>`);
         }
+        else if(pendingItem==='full') {
+            if(m.hp >= m.maxHp && m.moves.every(mv => mv.pp === mv.maxPP)) return alert("Sistemas óptimos.");
+            m.hp = m.maxHp;
+            m.moves.forEach(mv => mv.pp = mv.maxPP); // Restaurar PP
+            log(`<span class='log-heal'>¡Restauración Total de ${m.n}!</span>`);
+        }
+        
+        game.inv[pendingItem]--;
+        closeModal('modal-team');
+        if(game.turn) endTurn(); else updateUI();
     }
+
+    function swap(i) { game.activeIdx = i; closeModal('modal-team'); updateUI(); log(`Unidad desplegada: ${game.team[i].n}`); }
+    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
 </script>
 </body>
