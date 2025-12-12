@@ -3,759 +3,871 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POKENGINEER v10.0</title>
+    <title>POKENGINEER v23.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-deep: #020205;
-            --panel-bg: rgba(10, 15, 20, 0.95);
             --neon-blue: #00f3ff;
             --neon-green: #00ff9d;
             --neon-pink: #ff0055;
             --neon-gold: #ffd700;
             --neon-purple: #bd00ff;
+            
             --font-head: 'Orbitron', sans-serif;
             --font-body: 'Rajdhani', sans-serif;
-            
-            /* TYPE COLORS */
-            --c-fuego: #ff3333; --c-agua: #33ccff; --c-planta: #66ff66;
-            --c-mech: #e0e0e0; --c-elec: #ffee33;
         }
 
         body {
-            background: #000; margin: 0; height: 100dvh;
+            background: #000; margin: 0; height: 100dvh; width: 100vw;
             display: flex; justify-content: center; align-items: center; overflow: hidden;
             font-family: var(--font-body); color: #fff;
-            background-image: 
-                linear-gradient(rgba(0, 243, 255, 0.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 243, 255, 0.05) 1px, transparent 1px);
-            background-size: 40px 40px;
+            background-image: radial-gradient(circle at 50% 50%, #050510 0%, #000 100%);
+            touch-action: none;
         }
 
         #device {
             width: 100%; max-width: 480px; height: 100%;
-            border: 3px solid var(--neon-blue); border-radius: 8px;
-            background: radial-gradient(circle at center, #111 0%, #000 120%);
+            border: 2px solid var(--neon-blue); border-radius: 8px;
+            background: #050505;
             display: flex; flex-direction: column; position: relative;
-            box-shadow: 0 0 30px rgba(0, 243, 255, 0.15);
-            transition: border-color 0.3s;
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.1);
+            overflow: hidden;
         }
 
-        /* HEADER */
-        header {
-            padding: 10px; border-bottom: 2px solid rgba(255,255,255,0.1);
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(0,0,0,0.8); z-index: 10;
+        /* --- CAPA DE TRANSICIÓN (FLASH) --- */
+        #transition-layer {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: #fff; opacity: 0; pointer-events: none; z-index: 999;
         }
-        .header-title { font-family: var(--font-head); color: var(--neon-blue); font-size: 14px; letter-spacing: 2px; }
-        .cr-badge { color: var(--neon-gold); font-weight: bold; font-size: 18px; text-shadow: 0 0 5px var(--neon-gold); }
+        .anim-flash { animation: flashEffect 0.6s ease-out forwards; }
+        @keyframes flashEffect {
+            0% { opacity: 0; background: #fff; }
+            20% { opacity: 1; background: #fff; }
+            50% { opacity: 1; background: #000; }
+            100% { opacity: 0; pointer-events: none; }
+        }
 
-        /* ARENA */
+        /* --- PANTALLA DE INICIO / HISTORIA --- */
+        #intro-screen {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            background: #000; z-index: 100;
+            display: flex; flex-direction: column; padding: 30px; box-sizing: border-box;
+            overflow-y: auto;
+        }
+        
+        .typewriter-text {
+            color: var(--neon-green); font-family: 'Courier New', monospace;
+            font-size: 14px; line-height: 1.6; margin-bottom: 20px;
+            border-left: 2px solid var(--neon-blue); padding-left: 10px;
+            white-space: pre-wrap;
+        }
+
+        #intro-form { display: none; opacity: 0; transition: opacity 1s; }
+        #intro-form.visible { display: flex; opacity: 1; flex-direction: column; }
+
+        .input-group { margin-bottom: 20px; }
+        input {
+            background: #111; border: 1px solid var(--neon-blue); color: #fff;
+            padding: 10px; width: 100%; font-family: var(--font-head);
+            box-sizing: border-box; font-size: 16px; text-align: center;
+        }
+        .starter-container { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+        .starter-card {
+            border: 1px solid #333; background: #111; padding: 10px; cursor: pointer;
+            width: 30%; text-align: center; transition: 0.3s;
+        }
+        .starter-card:hover, .starter-card.selected {
+            border-color: var(--neon-gold); background: #222; transform: scale(1.05); box-shadow: 0 0 10px var(--neon-gold);
+        }
+
+        /* --- VISTAS --- */
+        .view-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column; z-index: 10;
+            background: #000;
+        }
+        .view-layer.active { display: flex; }
+
+        /* ================= MAPA ================= */
+        #map-container {
+            flex-grow: 1; display: grid; gap: 1px; background: #111;
+            align-content: center; justify-content: center;
+        }
+        .tile { display: flex; justify-content: center; align-items: center; font-size: 14px; position: relative; }
+        .tile-wall { background: #222; }
+        .tile-floor { background: #050505; }
+        .tile-grass { background: rgba(0, 243, 255, 0.05); border: 1px solid rgba(0, 243, 255, 0.15); }
+        .tile-boss { background: rgba(255, 0, 85, 0.2); border: 1px solid var(--neon-pink); animation: pulseRed 1s infinite; }
+        
+        .entity-player { font-size: 24px; z-index: 5; text-shadow: 0 0 10px var(--neon-blue); }
+
+        #map-ui {
+            height: 220px; background: rgba(10,15,20,0.98); border-top: 2px solid var(--neon-green);
+            padding: 10px; display: flex; flex-direction: column; gap: 10px;
+        }
+        .map-stats { display: flex; justify-content: space-between; font-size: 12px; color: var(--neon-blue); background: #000; padding: 5px; border: 1px solid #333; }
+        
+        .dpad-container { display: flex; justify-content: center; align-items: center; flex-grow: 1;}
+        .dpad { display: grid; grid-template-columns: 40px 40px 40px; grid-template-rows: 40px 40px 40px; }
+        .dpad-btn { background: #222; border: 1px solid #444; color: #fff; display: flex; justify-content: center; align-items: center; cursor: pointer; user-select: none; }
+        .dpad-btn:active { background: var(--neon-green); color: #000; }
+
+        .map-menu-bar { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 5px; }
+        .map-menu-btn { background: #080808; border: 1px solid var(--neon-blue); color: var(--neon-blue); padding: 8px 0; cursor: pointer; }
+
+        /* ================= BATALLA ================= */
+        header { padding: 8px 12px; border-bottom: 2px solid var(--neon-blue); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.8); }
+
         #arena {
-            flex-grow: 1; position: relative;
-            display: flex; flex-direction: column; justify-content: space-between;
-            padding: 20px; overflow: hidden;
+            flex-grow: 1; position: relative; padding: 20px; display: flex; flex-direction: column; justify-content: space-between;
+            background-image: linear-gradient(rgba(0,243,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(0,243,255,0.05) 1px, transparent 1px);
+            background-size: 30px 30px; perspective: 600px;
         }
 
-        .mon-container { position: relative; width: 100%; display: flex; flex-direction: column; }
-        .mon-container.enemy { align-items: flex-end; }
-        .mon-container.player { align-items: flex-start; }
+        .mon-container { display: flex; flex-direction: column; width: 140px; }
+        .mon-container.enemy { align-self: flex-end; align-items: flex-end; }
+        .mon-container.player { align-self: flex-start; align-items: flex-start; }
 
-        .sprite {
-            font-size: 100px; filter: drop-shadow(0 0 15px rgba(255,255,255,0.3));
-            transition: transform 0.2s; z-index: 5;
+        .holo-chip {
+            width: 120px; height: 120px; background: rgba(0,0,0,0.6); border: 2px solid var(--neon-blue);
+            display: flex; justify-content: center; align-items: center;
+            clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
         }
-        .float { animation: floating 3s ease-in-out infinite; }
-        @keyframes floating { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+        .enemy .holo-chip { border-color: var(--neon-pink); box-shadow: 0 0 15px rgba(255, 0, 85, 0.3); }
+
+        .holo-sprite { font-size: 70px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); animation: holoFloat 3s ease-in-out infinite; }
+        .shiny .holo-sprite { filter: hue-rotate(180deg) drop-shadow(0 0 10px var(--neon-gold)); }
+
+        .hud { width: 100%; padding: 5px; margin-top: 5px; background: rgba(0,0,0,0.8); border: 1px solid #333; border-left: 3px solid var(--neon-blue); font-size: 12px; }
+        .enemy .hud { border-left: none; border-right: 3px solid var(--neon-pink); text-align: right; }
         
-        /* SHINY EFFECT */
-        .shiny { 
-            filter: hue-rotate(180deg) drop-shadow(0 0 15px var(--neon-gold)) !important; 
-            animation: floating 2s ease-in-out infinite alternate;
-        }
-
-        /* HUD MEJORADO */
-        .hud-box {
-            background: rgba(0,0,0,0.8); border: 1px solid #444;
-            padding: 8px; border-radius: 4px; width: 170px;
-            backdrop-filter: blur(4px); margin-bottom: -10px; z-index: 6;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-        .hud-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-        .mon-name { font-family: var(--font-head); font-size: 14px; text-transform: uppercase; color:#fff; }
-        .mon-lvl { font-family: var(--font-head); font-size: 14px; color: var(--neon-gold); }
+        .bar-wrap { height: 6px; background: #222; margin-top: 4px; border-radius: 3px; overflow: hidden; position: relative; }
+        .hp-fill { height: 100%; transition: width 0.5s; background: linear-gradient(90deg, #ff3333, #ffff00, #00ff00); }
         
-        .hp-track { width: 100%; height: 8px; background: #222; border: 1px solid #555; border-radius: 2px; overflow: hidden; }
-        .hp-fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ff3333, #ffaa00, #00ff00); transition: width 0.4s ease-out; }
+        .xp-wrap { height: 3px; background: #111; margin-top: 2px; width: 100%; }
+        .xp-fill { height: 100%; background: var(--neon-blue); width: 0%; transition: width 0.5s; box-shadow: 0 0 5px var(--neon-blue); }
+
+        #console { height: 80px; background: rgba(0,0,0,0.95); border-top: 1px solid var(--neon-blue); padding: 8px; font-size: 11px; overflow-y: auto; display: flex; flex-direction: column-reverse; }
+        .log-entry { margin-bottom: 2px; color: #ccc; }
         
-        .type-tag { font-size: 9px; padding: 1px 4px; border-radius: 2px; color: #000; font-weight: bold; margin-top: 4px; display: inline-block; }
-
-        /* ANIMATIONS */
-        @keyframes attackRight { 0%{transform:translateX(0)} 50%{transform:translateX(100px)} 100%{transform:translateX(0)} }
-        @keyframes attackLeft { 0%{transform:translateX(0)} 50%{transform:translateX(-100px)} 100%{transform:translateX(0)} }
-        @keyframes shake { 0%{transform:translate(0)} 25%{transform:translate(5px)} 75%{transform:translate(-5px)} 100%{transform:translate(0)} }
-        .attacking-right { animation: attackRight 0.3s ease-in-out !important; }
-        .attacking-left { animation: attackLeft 0.3s ease-in-out !important; }
-        .hit { animation: shake 0.4s !important; filter: brightness(2) sepia(1) hue-rotate(-50deg) saturate(5) !important; }
-
-        /* CONSOLA DE DIÁLOGO NEON */
-        #dialogue-box {
-            height: 90px; min-height: 90px; background: rgba(5, 10, 15, 0.98);
-            border-top: 2px solid var(--neon-blue); border-bottom: 1px solid #333;
-            padding: 10px 15px; display: flex; flex-direction: column-reverse; overflow-y: auto;
-            font-size: 15px; line-height: 1.5; letter-spacing: 0.5px;
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
-        }
-        .log-entry { margin-bottom: 6px; border-left: 3px solid #333; padding-left: 8px; animation: slideIn 0.3s; }
-        @keyframes slideIn { from{opacity:0; transform:translateX(-10px)} to{opacity:1; transform:translateX(0)} }
+        #controls { padding: 8px; background: #080808; border-top: 1px solid #333; display: grid; grid-template-columns: 2fr 1fr; gap: 6px; height: 140px; flex-shrink: 0; }
         
-        .log-txt { color: #ccc; }
-        .log-move { color: #fff; font-weight: bold; text-shadow: 0 0 5px #fff; }
-        .log-dmg { color: var(--neon-pink); font-weight: bold; font-family: var(--font-head); }
-        .log-crit { color: var(--neon-gold); font-weight: bold; text-shadow: 0 0 8px var(--neon-gold); text-transform: uppercase; }
-        .log-eff { color: var(--neon-green); font-weight: bold; text-shadow: 0 0 8px var(--neon-green); }
-        .log-weak { color: #888; font-style: italic; }
-        .log-capture { color: var(--neon-purple); font-weight: bold; text-shadow: 0 0 10px var(--neon-purple); border-left-color: var(--neon-purple) !important; }
-        .log-heal { color: #00ff9d; font-weight: bold; border-left-color: #00ff9d !important; }
-
-        /* CONTROLS */
-        #controls {
-            background: #050505; padding: 10px; border-top: 1px solid #333;
-            display: grid; grid-template-columns: 2fr 1fr; gap: 8px;
-            height: 160px; flex-shrink: 0;
-        }
-        .move-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+        .atk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
         
-        .atk-btn {
-            background: #111; border: 1px solid #444; color: #aaa;
-            display: flex; flex-direction: column; justify-content: center; align-items: flex-start;
-            padding: 8px; cursor: pointer; position: relative; transition: 0.2s;
+        .atk-btn { 
+            font-size: 13px; text-align: center; padding: 10px 5px; 
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border: 1px solid rgba(255,255,255,0.2); 
+            color: #fff; text-shadow: 0 1px 2px #000;
+            cursor: pointer; transition: filter 0.2s;
+            font-family: var(--font-body); font-weight: bold;
         }
-        .atk-btn:hover:not(:disabled) { background: #222; border-color: var(--neon-blue); color: #fff; }
-        .atk-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        .atk-name { font-weight: bold; font-size: 13px; }
-        .pp-badge { font-size: 10px; color: #666; margin-top: 2px; }
-        .type-dot { position: absolute; top: 5px; right: 5px; width: 8px; height: 8px; border-radius: 50%; }
+        .atk-btn:active { filter: brightness(1.2); transform: translateY(2px); }
+        .atk-btn small { font-size: 9px; opacity: 0.8; font-weight: normal; margin-top: 2px;}
 
-        .sys-grid { display: grid; grid-template-rows: 1fr 1fr; gap: 5px; }
-        .sys-btn {
-            background: #151515; border: 1px solid #333; color: #fff;
-            font-family: var(--font-head); font-size: 16px; letter-spacing: 1px;
-            cursor: pointer; text-transform: uppercase;
-        }
-        .sys-btn:hover { border-color: var(--neon-green); color: var(--neon-green); }
+        button.ui-btn { background: #111; border: 1px solid #444; color: #fff; cursor: pointer; }
+        button.ui-btn:hover { border-color: var(--neon-blue); background: #1a1a1a; }
 
         /* MODALS */
-        .modal {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            background: rgba(0,0,0,0.98); z-index: 50; display: none;
-            flex-direction: column; padding: 20px; box-sizing: border-box;
-        }
-        .modal-header { font-family: var(--font-head); font-size: 24px; color: var(--neon-blue); margin-bottom: 15px; border-bottom: 1px solid #333; }
-        
-        .shop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; overflow-y: auto; }
-        .shop-card {
-            background: #111; border: 1px solid #333; padding: 10px; border-radius: 5px;
-            display: flex; flex-direction: column; align-items: center; text-align: center;
-        }
-        .buy-btn { width: 100%; padding: 5px; margin-top: 5px; background: #222; border: 1px solid var(--neon-green); color: var(--neon-green); cursor: pointer; }
+        .modal { position: absolute; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.98); z-index: 50; display: none; flex-direction: column; padding: 15px; box-sizing: border-box; }
+        .modal-title { font-family: var(--font-head); font-size: 20px; color: var(--neon-blue); margin-bottom: 15px; border-bottom: 1px solid #333; }
+        .grid-list { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; overflow-y: auto; padding-bottom: 20px; }
+        .card { background: #151515; border: 1px solid #333; padding: 10px; text-align: center; border-radius: 4px; font-size: 12px; }
 
-        /* --- VISUALES DE INICIO --- */
-        .full-screen {
-            position: absolute; top:0; left:0; width:100%; height:100%;
-            background: #000; z-index: 100; display: flex; flex-direction: column;
-            align-items: center; justify-content: center; text-align: center; padding: 30px; box-sizing: border-box;
-        }
-        
-        /* Animación de Reactor (Núcleo) */
-        .reactor-container {
-            position: relative; width: 180px; height: 180px; margin-bottom: 30px;
-            display: flex; justify-content: center; align-items: center;
-        }
-        .reactor-ring {
-            position: absolute; width: 100%; height: 100%;
-            border: 4px dashed var(--neon-blue); border-radius: 50%;
-            animation: spin 10s linear infinite;
-        }
-        .reactor-ring-2 {
-            position: absolute; width: 80%; height: 80%;
-            border: 2px solid var(--neon-purple); border-radius: 50%;
-            border-left-color: transparent; border-right-color: transparent;
-            animation: spin 5s linear infinite reverse;
-        }
-        .reactor-core {
-            width: 50%; height: 50%;
-            background: radial-gradient(circle, var(--neon-blue), transparent);
-            border-radius: 50%;
-            box-shadow: 0 0 30px var(--neon-blue);
-            animation: pulseCore 2s infinite ease-in-out;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 40px;
-        }
-
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes pulseCore { 0%,100% { transform: scale(0.9); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; box-shadow: 0 0 50px var(--neon-blue); } }
-        @keyframes glitch { 0% { transform: translate(0); } 20% { transform: translate(-2px, 2px); } 40% { transform: translate(-2px, -2px); } 60% { transform: translate(2px, 2px); } 80% { transform: translate(2px, -2px); } 100% { transform: translate(0); } }
-
-        .glitch-text {
-            font-family: var(--font-head); font-size: 45px; color: #fff;
-            text-shadow: 2px 2px var(--neon-pink), -2px -2px var(--neon-blue);
-            animation: glitch 3s infinite alternate-reverse;
-            margin-bottom: 10px;
-        }
-
-        .story-box {
-            background: rgba(10, 20, 30, 0.95);
-            border: 1px solid var(--neon-blue);
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
-            padding: 20px; border-radius: 10px; width: 100%; max-width: 400px;
-            margin-top: 20px; text-align: left;
-        }
-        .story-text { font-size: 18px; line-height: 1.6; color: #eee; min-height: 80px; }
-        .next-story-btn {
-            background: var(--neon-blue); color: #000; border: none; padding: 10px 25px;
-            font-weight: bold; font-family: var(--font-head); cursor: pointer;
-            float: right; margin-top: 10px;
-            animation: pulseCore 2s infinite;
-        }
-
-        input { background: #111; border: 1px solid var(--neon-blue); color: #fff; padding: 15px; width: 100%; margin: 10px 0; text-align: center; font-size: 18px; font-family: var(--font-body); }
+        @keyframes holoFloat { 0%{transform:translateY(0); opacity: 0.9;} 50%{transform:translateY(-5px); opacity: 1;} 100%{transform:translateY(0); opacity: 0.9;} }
+        @keyframes pulseRed { 0%{background:rgba(255,0,85,0.2)} 50%{background:rgba(255,0,85,0.6)} 100%{background:rgba(255,0,85,0.2)} }
+        .attack-anim { animation: shake 0.3s; }
+        @keyframes shake { 0%{transform: translateX(0)} 25%{transform: translateX(10px)} 75%{transform: translateX(-10px)} 100%{transform: translateX(0)} }
     </style>
 </head>
 <body>
 
 <div id="device">
     
-    <!-- LOGIN LAYER (REDISEÑADO) -->
-    <div id="login-screen" class="full-screen">
-        <div class="reactor-container">
-            <div class="reactor-ring"></div>
-            <div class="reactor-ring-2"></div>
-            <div class="reactor-core">⚡</div>
-        </div>
+    <!-- CAPA TRANSICIÓN -->
+    <div id="transition-layer"></div>
+
+    <!-- PANTALLA INTRO -->
+    <div id="intro-screen">
+        <div style="font-size:30px; margin-bottom:20px; color:var(--neon-blue); text-align:center;">💠 POKENGINEER v23</div>
         
-        <h1 class="glitch-text">POKENGINEER</h1>
-        <p style="color:var(--neon-green); letter-spacing: 3px; font-weight: bold;">SISTEMAS DE CONTROL v10.0</p>
-        
-        <div style="margin-top:40px; width:100%;">
-            <input type="text" id="inp-name" placeholder="ID INGENIERO">
-            <input type="date" id="inp-dob">
+        <div id="story-display" class="typewriter-text"></div>
+
+        <div id="intro-form">
+            <div class="input-group">
+                <label style="color:var(--neon-green); font-size:12px; display:block; margin-bottom:5px;">ID DE INGENIERO:</label>
+                <input type="text" id="player-name-input" placeholder="INGRESAR NOMBRE..." maxlength="12">
+            </div>
+
+            <div style="color:var(--neon-green); font-size:12px; margin-bottom:5px; text-align:center;">SELECCIONA UNIDAD INICIAL:</div>
+            <div class="starter-container">
+                <div class="starter-card" onclick="selectStarter(2)">
+                    <div style="font-size:30px">⚡</div>
+                    <div style="color:#ff0">Sparky</div>
+                    <small>Agilidad</small>
+                </div>
+                <div class="starter-card" onclick="selectStarter(5)">
+                    <div style="font-size:30px">🔥</div>
+                    <div style="color:#f50">Ember</div>
+                    <small>Potencia</small>
+                </div>
+                <div class="starter-card" onclick="selectStarter(4)">
+                    <div style="font-size:30px">💧</div>
+                    <div style="color:#0cf">Drip</div>
+                    <small>Blindaje</small>
+                </div>
+            </div>
+
+            <button onclick="confirmStart()" style="padding:15px; background:var(--neon-blue); color:#000; border:none; font-weight:bold; font-family:var(--font-head); cursor:pointer;">INICIAR SISTEMA</button>
         </div>
-        <button onclick="login()" style="margin-top:20px; padding:15px 40px; background:transparent; border:2px solid var(--neon-blue); color:var(--neon-blue); font-weight:bold; cursor:pointer; font-size: 18px; font-family: var(--font-head);">INICIAR TURNO</button>
     </div>
 
-    <!-- INTRO LAYER (HISTORIA POKENGINEER) -->
-    <div id="intro-screen" class="full-screen" style="display:none; justify-content: center;">
-        <h2 style="color:var(--neon-pink); font-family:var(--font-head); text-shadow: 0 0 10px var(--neon-pink);">ALERTA DE SISTEMA</h2>
+    <!-- VIEW: MAPA -->
+    <div id="view-map" class="view-layer">
+        <header>
+            <div>
+                <div style="font-size:9px; color:#888;">OPERADOR</div>
+                <div style="font-family:var(--font-head); color:var(--neon-green);" id="ui-player-name">PLAYER</div>
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:9px; color:#888;">SECTOR</div>
+                <div style="color:#fff; font-weight:bold;">PISO <span id="map-floor">1</span></div>
+            </div>
+        </header>
         
-        <div class="story-box">
-            <p id="intro-text" class="story-text"></p>
+        <div id="map-container"></div>
+
+        <div id="map-ui">
+            <div class="map-stats">
+                <span>OBJETIVO: <span id="kill-count" style="color:#fff">0</span>/15</span>
+                <span>CR: <span id="map-cr" style="color:var(--neon-gold)">0</span></span>
+            </div>
             
-            <!-- Selector oculto al principio -->
-            <div id="starter-select" style="display:none; gap:10px; justify-content:center; margin-top:20px;">
-                <div onclick="pickStarter(0)" style="border:1px solid #333; padding:15px; cursor:pointer; width:30%; text-align:center; background:rgba(0,0,0,0.5);">
-                    <div style="font-size:40px;">🔥</div>
-                    <div style="color:var(--c-fuego); font-weight:bold;">IGNIS</div>
-                </div>
-                <div onclick="pickStarter(1)" style="border:1px solid #333; padding:15px; cursor:pointer; width:30%; text-align:center; background:rgba(0,0,0,0.5);">
-                    <div style="font-size:40px;">💧</div>
-                    <div style="color:var(--c-agua); font-weight:bold;">AQUA</div>
-                </div>
-                <div onclick="pickStarter(2)" style="border:1px solid #333; padding:15px; cursor:pointer; width:30%; text-align:center; background:rgba(0,0,0,0.5);">
-                    <div style="font-size:40px;">🌿</div>
-                    <div style="color:var(--c-planta); font-weight:bold;">TERRA</div>
+            <div class="dpad-container">
+                <div class="dpad">
+                    <div></div><div class="dpad-btn" onclick="movePlayer(0, -1)">▲</div><div></div>
+                    <div class="dpad-btn" onclick="movePlayer(-1, 0)">◀</div><div class="dpad-center"></div><div class="dpad-btn" onclick="movePlayer(1, 0)">▶</div>
+                    <div></div><div class="dpad-btn" onclick="movePlayer(0, 1)">▼</div><div></div>
                 </div>
             </div>
 
-            <button id="intro-btn" class="next-story-btn" onclick="nextIntro()">CONFIRMAR >></button>
-        </div>
-    </div>
-
-    <!-- GAME HEADER -->
-    <header>
-        <div>
-            <span class="header-title">ING. <span id="ui-name">USER</span></span>
-            <button onclick="if(confirm('¿Reiniciar sistema?')) location.reload()" style="background:none; border:none; color:#555; cursor:pointer;">⚙️</button>
-        </div>
-        <div class="cr-badge">💎 <span id="ui-cr">0</span></div>
-    </header>
-
-    <!-- ARENA -->
-    <div id="arena">
-        <!-- Enemy -->
-        <div class="mon-container enemy">
-            <div class="hud-box">
-                <div class="hud-row">
-                    <span id="enemy-name" class="mon-name">ENEMY</span>
-                    <span id="enemy-lvl" class="mon-lvl">Nv.1</span>
-                </div>
-                <div class="hp-track"><div id="enemy-hp-bar" class="hp-fill"></div></div>
-                <span id="enemy-type" class="type-tag" style="background:#fff;">TYPE</span>
-            </div>
-            <div id="enemy-sprite" class="sprite float">🤖</div>
-        </div>
-
-        <!-- Player -->
-        <div class="mon-container player">
-            <div id="player-sprite" class="sprite float">🤠</div>
-            <div class="hud-box">
-                <div class="hud-row">
-                    <span id="player-name" class="mon-name">PLAYER</span>
-                    <span id="player-lvl" class="mon-lvl">Nv.1</span>
-                </div>
-                <div class="hp-track"><div id="player-hp-bar" class="hp-fill"></div></div>
-                <div class="hud-row">
-                    <span id="player-type" class="type-tag" style="background:#fff;">TYPE</span>
-                    <span id="player-hp-txt" style="font-size:10px;">100/100</span>
-                </div>
+            <div class="map-menu-bar">
+                <button class="map-menu-btn" onclick="openBag()">🎒 ITEMS</button>
+                <button class="map-menu-btn" onclick="openPokedex()">📱 DEX</button>
+                <button class="map-menu-btn" onclick="openShop()">🛒 SHOP</button>
+                <button class="map-menu-btn" onclick="openTeam()">👥 TEAM</button>
             </div>
         </div>
-        
-        <div id="boss-alert" style="display:none; position:absolute; top:45%; width:100%; text-align:center; z-index:20;">
-            <h1 style="background:rgba(255,0,0,0.9); padding:20px; text-shadow:0 0 10px red; border: 2px solid red;">⚠️ ANOMALÍA MASIVA ⚠️</h1>
+    </div>
+
+    <!-- VIEW: BATALLA -->
+    <div id="view-battle" class="view-layer">
+        <header>
+            <div class="header-title" style="color:var(--neon-pink)">ALERTA DE COMBATE</div>
+        </header>
+
+        <div id="arena">
+            <!-- Enemy -->
+            <div class="mon-container enemy">
+                <div class="hud">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span id="e-name">ENEMY</span> <span id="e-lvl" style="color:var(--neon-pink)">Nv.1</span>
+                    </div>
+                    <div class="bar-wrap"><div id="e-hp" class="hp-fill" style="width:100%"></div></div>
+                </div>
+                <div class="holo-chip"><div id="e-sprite" class="holo-sprite">🤖</div></div>
+            </div>
+
+            <!-- Player -->
+            <div class="mon-container player">
+                <div class="holo-chip"><div id="p-sprite" class="holo-sprite">🧑‍🚀</div></div>
+                <div class="hud">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span id="p-name">PLAYER</span> <span id="p-lvl" style="color:var(--neon-green)">Nv.1</span>
+                    </div>
+                    <div class="bar-wrap"><div id="p-hp" class="hp-fill" style="width:100%"></div></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+                        <div style="font-size:9px; color:var(--neon-blue);">XP</div>
+                        <div class="xp-wrap"><div id="p-xp" class="xp-fill"></div></div>
+                    </div>
+                    <div style="text-align:right; font-size:9px; margin-top:2px;" id="p-hp-txt">100/100</div>
+                </div>
+            </div>
         </div>
-    </div>
 
-    <!-- DIALOGUE (NEON) -->
-    <div id="dialogue-box">
-        <div class="log-entry log-txt">Terminal de mando lista...</div>
-    </div>
+        <div id="console"></div>
 
-    <!-- CONTROLS -->
-    <div id="controls">
-        <div id="combat-grid" class="move-grid"></div>
-        <div class="sys-grid">
-            <button class="sys-btn" onclick="openBag()" style="border-color:var(--neon-green);">🎒 MOCHILA</button>
-            <button class="sys-btn" onclick="openTeam()" style="border-color:var(--neon-blue);">👥 EQUIPO</button>
+        <div id="controls">
+            <div id="combat-menu" class="atk-grid"></div>
+            <!-- SE AGREGO EL BOTON DE CAMBIO -->
+            <div style="display:grid; grid-template-rows:1fr 1fr 1fr; gap:2px;">
+                <button class="ui-btn" onclick="openBag()">🎒 ITEMS</button>
+                <button class="ui-btn" onclick="openTeam()">👥 CAMBIO</button>
+                <button class="ui-btn" onclick="runAway()" style="color:#aaa;">🏃 HUIR</button>
+            </div>
         </div>
     </div>
 
     <!-- MODALS -->
     <div id="modal-bag" class="modal">
-        <div class="modal-header">SUMINISTROS</div>
-        <div style="display:flex; gap:10px; margin-bottom:10px;">
-            <button onclick="showShopTab('inventory')" style="flex:1; padding:5px;">INV</button>
-            <button onclick="showShopTab('shop')" style="flex:1; padding:5px; background:var(--neon-blue); color:#000;">TIENDA</button>
-        </div>
-        <div id="shop-container" class="shop-grid" style="display:none;"></div>
-        <div id="inv-container" class="shop-grid"></div>
-        <button onclick="closeModal('modal-bag')" style="margin-top:auto; padding:15px; background:#333; color:#fff; border:none;">CERRAR</button>
+        <div class="modal-title">MOCHILA</div>
+        <div id="bag-list" class="grid-list"></div>
+        <button class="ui-btn" onclick="closeModal('modal-bag')" style="margin-top:auto; padding:15px;">VOLVER</button>
+    </div>
+
+    <div id="modal-shop" class="modal">
+        <div class="modal-title">TIENDA (CR: <span id="shop-cr-disp">0</span>)</div>
+        <div id="shop-list" class="grid-list"></div>
+        <button class="ui-btn" onclick="closeModal('modal-shop')" style="margin-top:auto; padding:15px;">VOLVER</button>
     </div>
 
     <div id="modal-team" class="modal">
-        <div class="modal-header">MATRIZ DE UNIDADES</div>
-        <div id="team-list" style="flex-grow:1; overflow-y:auto; display:flex; flex-direction:column; gap:8px;"></div>
-        <button onclick="closeModal('modal-team')" style="margin-top:10px; padding:15px; background:#333; color:#fff; border:none;">VOLVER</button>
+        <div class="modal-title">EQUIPO</div>
+        <div id="team-list" style="overflow-y:auto; flex-grow:1; display:flex; flex-direction:column; gap:5px;"></div>
+        <button class="ui-btn" onclick="closeModal('modal-team')" style="margin-top:10px; padding:15px;">VOLVER</button>
+    </div>
+
+    <div id="modal-dex" class="modal">
+        <div class="modal-title">BASE DE DATOS</div>
+        <div id="dex-list" class="grid-list" style="grid-template-columns: 1fr; gap:5px;"></div>
+        <button class="ui-btn" onclick="closeModal('modal-dex')" style="margin-top:auto; padding:15px;">VOLVER</button>
     </div>
 
 </div>
 
 <script>
-    /* === DATABASE & CONFIG === */
-    const TYPES = { FUEGO:'fuego', AGUA:'agua', PLANTA:'planta', MECH:'mech', ELEC:'elec' };
-    const TYPE_COLORS = { fuego:'#ff3333', agua:'#33ccff', planta:'#66ff66', mech:'#e0e0e0', elec:'#ffee33' };
+    /* === CONFIGURACIÓN === */
+    const MAP_SIZE = 13;
+    const ENCOUNTERS_TO_BOSS = 15;
     
-    const CHART = {
-        fuego: { planta:2, mech:2, agua:0.5 }, agua: { fuego:2, mech:0.5, planta:0.5 },
-        planta: { agua:2, elec:2, fuego:0.5 }, elec: { agua:2, mech:2, elec:0.5 }, mech: { planta:2, fuego:0.5 }
+    // CONFIG COLORES
+    const TYPES = { FUEGO:'fuego', AGUA:'agua', PLANTA:'planta', MECH:'mech', ELEC:'elec', DARK:'dark' };
+    
+    const TYPE_COLORS = {
+        'fuego': '#ff4400', 'agua': '#0088ff', 'planta': '#00cc44',
+        'mech': '#777777', 'elec': '#ddbb00', 'dark': '#6600cc', 'normal': '#444444'
     };
 
-    // MOVIMIENTOS EXPANDIDOS
-    const MOVES_DB = {
-        // FUEGO
-        'Llamarada': { t:TYPES.FUEGO, pp:5, pwr:90 }, 'Fundición': { t:TYPES.FUEGO, pp:10, pwr:60 },
-        'Inferno': { t:TYPES.FUEGO, pp:5, pwr:110 }, 'Fusión': { t:TYPES.FUEGO, pp:3, pwr:140 },
-        // AGUA
-        'Hidropresión': { t:TYPES.AGUA, pp:5, pwr:90 }, 'Purga': { t:TYPES.AGUA, pp:15, pwr:40 },
-        'Tsunami': { t:TYPES.AGUA, pp:5, pwr:110 }, 'Cero Absoluto': { t:TYPES.AGUA, pp:3, pwr:140 },
-        // PLANTA
-        'Rayo Solar': { t:TYPES.PLANTA, pp:5, pwr:100 }, 'Espinas': { t:TYPES.PLANTA, pp:15, pwr:40 },
-        'Bosque Profundo': { t:TYPES.PLANTA, pp:5, pwr:110 }, 'Gaia': { t:TYPES.PLANTA, pp:3, pwr:140 },
-        // MECH
-        'Taladro': { t:TYPES.MECH, pp:5, pwr:85 }, 'Prensa': { t:TYPES.MECH, pp:10, pwr:60 },
-        'Láser Orbital': { t:TYPES.MECH, pp:5, pwr:120 }, 'Reconfiguración': { t:TYPES.MECH, pp:3, pwr:150 },
-        // ELEC
-        'Sobrecarga': { t:TYPES.ELEC, pp:5, pwr:95 }, 'Chispazo': { t:TYPES.ELEC, pp:15, pwr:45 },
-        'Plasma': { t:TYPES.ELEC, pp:5, pwr:110 }, 'Tormenta': { t:TYPES.ELEC, pp:3, pwr:140 }
-    };
-
-    // SISTEMA DE APRENDIZAJE (Level: Move)
-    const LEARNSETS = {
-        fuego: { 8: 'Inferno', 12: 'Fundición', 16: 'Fusión' },
-        agua: { 8: 'Tsunami', 12: 'Hidropresión', 16: 'Cero Absoluto' },
-        planta: { 8: 'Bosque Profundo', 12: 'Rayo Solar', 16: 'Gaia' },
-        mech: { 8: 'Láser Orbital', 12: 'Taladro', 16: 'Reconfiguración' },
-        elec: { 8: 'Plasma', 12: 'Sobrecarga', 16: 'Tormenta' }
-    };
-
-    // BASE DE DATOS EXTENDIDA (30+ Pokes)
-    const DEX = [
-        // FUEGO
-        {id:0, n:"Ignis Core", t:TYPES.FUEGO, s:"🔥", moves:['Llamarada', 'Fundición']},
-        {id:1, n:"Pyro Bot", t:TYPES.FUEGO, s:"🌋", moves:['Fundición', 'Inferno']},
-        {id:2, n:"Magma Gear", t:TYPES.FUEGO, s:"🧨", moves:['Llamarada', 'Fusión']},
-        {id:3, n:"Solar Flare", t:TYPES.FUEGO, s:"☀️", moves:['Inferno', 'Fusión']},
-        {id:4, n:"Ember Unit", t:TYPES.FUEGO, s:"🕯️", moves:['Fundición', 'Llamarada']},
-        {id:5, n:"Ash Crawler", t:TYPES.FUEGO, s:"🦂", moves:['Fundición', 'Inferno']},
-        // AGUA
-        {id:6, n:"Aqua Flow", t:TYPES.AGUA, s:"💧", moves:['Hidropresión', 'Purga']},
-        {id:7, n:"Hydro Pump", t:TYPES.AGUA, s:"🚿", moves:['Purga', 'Tsunami']},
-        {id:8, n:"Ice Node", t:TYPES.AGUA, s:"🧊", moves:['Cero Absoluto', 'Hidropresión']},
-        {id:9, n:"Steam Valve", t:TYPES.AGUA, s:"🌫️", moves:['Purga', 'Tsunami']},
-        {id:10, n:"Liquid Metal", t:TYPES.AGUA, s:"🧪", moves:['Hidropresión', 'Cero Absoluto']},
-        {id:11, n:"Deep Dive", t:TYPES.AGUA, s:"⚓", moves:['Tsunami', 'Purga']},
-        // PLANTA
-        {id:12, n:"Terra Node", t:TYPES.PLANTA, s:"🌿", moves:['Rayo Solar', 'Espinas']},
-        {id:13, n:"Bio Moss", t:TYPES.PLANTA, s:"🦠", moves:['Espinas', 'Bosque Profundo']},
-        {id:14, n:"Vine Cable", t:TYPES.PLANTA, s:"🎍", moves:['Rayo Solar', 'Gaia']},
-        {id:15, n:"Spore Cloud", t:TYPES.PLANTA, s:"🍄", moves:['Espinas', 'Bosque Profundo']},
-        {id:16, n:"Root Main", t:TYPES.PLANTA, s:"🌳", moves:['Gaia', 'Rayo Solar']},
-        {id:17, n:"Leaf Circuit", t:TYPES.PLANTA, s:"🍃", moves:['Bosque Profundo', 'Espinas']},
-        // MECH
-        {id:18, n:"Gear MK1", t:TYPES.MECH, s:"⚙️", moves:['Taladro', 'Prensa']},
-        {id:19, n:"Iron Hull", t:TYPES.MECH, s:"🛡️", moves:['Prensa', 'Láser Orbital']},
-        {id:20, n:"Drill Bit", t:TYPES.MECH, s:"🔩", moves:['Taladro', 'Reconfiguración']},
-        {id:21, n:"Cyber Claw", t:TYPES.MECH, s:"🦾", moves:['Prensa', 'Taladro']},
-        {id:22, n:"Nano Swarm", t:TYPES.MECH, s:"🧱", moves:['Láser Orbital', 'Reconfiguración']},
-        {id:23, n:"Steel Core", t:TYPES.MECH, s:"🪙", moves:['Prensa', 'Láser Orbital']},
-        // ELEC
-        {id:24, n:"Volt Unit", t:TYPES.ELEC, s:"⚡", moves:['Sobrecarga', 'Chispazo']},
-        {id:25, n:"Spark Plug", t:TYPES.ELEC, s:"🔌", moves:['Chispazo', 'Plasma']},
-        {id:26, n:"Thunder Coil", t:TYPES.ELEC, s:"🌀", moves:['Sobrecarga', 'Tormenta']},
-        {id:27, n:"Battery Pack", t:TYPES.ELEC, s:"🔋", moves:['Chispazo', 'Plasma']},
-        {id:28, n:"Static Field", t:TYPES.ELEC, s:"📡", moves:['Tormenta', 'Sobrecarga']},
-        {id:29, n:"Neon Pulse", t:TYPES.ELEC, s:"💡", moves:['Plasma', 'Chispazo']},
-        // BOSSES
-        {id:99, n:"MEGA SYSTEM", t:TYPES.MECH, s:"👹", boss:true, moves:['Taladro', 'Sobrecarga']},
-        {id:100, n:"GIGA VOLT", t:TYPES.ELEC, s:"🌩️", boss:true, moves:['Tormenta', 'Plasma']},
-        {id:101, n:"TERRA PRIME", t:TYPES.PLANTA, s:"🌍", boss:true, moves:['Gaia', 'Bosque Profundo']}
+    const RAW_DB = [
+        // PISO 1 (0-9)
+        {n:"Bit Bug", s:"🐞", t:TYPES.PLANTA}, {n:"Wire Worm", s:"🐛", t:TYPES.MECH}, {n:"Sparky", s:"⚡", t:TYPES.ELEC},
+        {n:"Pebble", s:"🪨", t:TYPES.MECH}, {n:"Drip", s:"💧", t:TYPES.AGUA}, {n:"Ember", s:"🔥", t:TYPES.FUEGO},
+        {n:"Leafy", s:"🍃", t:TYPES.PLANTA}, {n:"Batty", s:"🦇", t:TYPES.DARK}, {n:"Rat-X", s:"🐀", t:TYPES.MECH}, {n:"Slime", s:"🦠", t:TYPES.AGUA},
+        // PISO 2 (10-19)
+        {n:"Cyber Wolf", s:"🐺", t:TYPES.MECH}, {n:"Flame Fox", s:"🦊", t:TYPES.FUEGO}, {n:"Aqua Fish", s:"🐟", t:TYPES.AGUA},
+        {n:"Thunder Bird", s:"🦅", t:TYPES.ELEC}, {n:"Vine Snake", s:"🐍", t:TYPES.PLANTA}, {n:"Ghost Shell", s:"👻", t:TYPES.DARK},
+        {n:"Iron Crab", s:"🦀", t:TYPES.MECH}, {n:"Magma Ant", s:"🐜", t:TYPES.FUEGO}, {n:"Deep Squid", s:"🦑", t:TYPES.AGUA}, {n:"Zap Cat", s:"🐱", t:TYPES.ELEC},
+        // PISO 3 (20-29)
+        {n:"Mech Gorilla", s:"🦍", t:TYPES.MECH}, {n:"Solar Lion", s:"🦁", t:TYPES.FUEGO}, {n:"Tsunami Shark", s:"🦈", t:TYPES.AGUA},
+        {n:"Volt Bear", s:"🐻", t:TYPES.ELEC}, {n:"Forest Trex", s:"🦖", t:TYPES.PLANTA}, {n:"Shadow Owl", s:"🦉", t:TYPES.DARK},
+        {n:"Steel Rhino", s:"🦏", t:TYPES.MECH}, {n:"Lava Golem", s:"👺", t:TYPES.FUEGO}, {n:"Ice Whale", s:"🐋", t:TYPES.AGUA}, {n:"Storm Hawk", s:"🦅", t:TYPES.ELEC},
+        // PISO 4 (30-39)
+        {n:"Plasma Dragon", s:"🐉", t:TYPES.ELEC}, {n:"Inferno Drake", s:"🐲", t:TYPES.FUEGO}, {n:"Bio Titan", s:"🦕", t:TYPES.PLANTA},
+        {n:"Neon Tiger", s:"🐅", t:TYPES.ELEC}, {n:"Abyss Croc", s:"🐊", t:TYPES.AGUA}, {n:"Void Spirit", s:"👽", t:TYPES.DARK},
+        {n:"Mecha Zilla", s:"🦎", t:TYPES.MECH}, {n:"Scorpion K", s:"🦂", t:TYPES.DARK}, {n:"Spider Web", s:"🕷️", t:TYPES.MECH}, {n:"Uni Horn", s:"🦄", t:TYPES.PLANTA},
+        // PISO 5 (40-49)
+        {n:"OMEGA", s:"🧿", t:TYPES.MECH}, {n:"PHOENIX", s:"🦅", t:TYPES.FUEGO}, {n:"KRAKEN", s:"🐙", t:TYPES.AGUA},
+        {n:"ZEUS", s:"⚡", t:TYPES.ELEC}, {n:"GAIA", s:"🌳", t:TYPES.PLANTA}, {n:"HADES", s:"💀", t:TYPES.DARK},
+        {n:"CHRONOS", s:"⏳", t:TYPES.MECH}, {n:"COSMOS", s:"🌌", t:TYPES.DARK}, {n:"SOL", s:"☀️", t:TYPES.FUEGO}, {n:"LUNA", s:"🌙", t:TYPES.DARK}
     ];
 
-    const ITEMS_DB = {
-        'ball': { n:"Esfera Std", price:50, icon:"🔴" }, 
-        'great': { n:"Esfera Tech", price:200, icon:"🔵" },
-        'ultra': { n:"Esfera Zero", price:1000, icon:"🟣" }, 
-        'potion': { n:"Refrigerante", price:100, icon:"💊" },
-        'full': { n:"Restauración Total", price:300, icon:"💎" }, // NUEVO
-        'revive': { n:"Reboot Kit", price:200, icon:"🔋" }
+    const MOVES = {
+        'Golpe': {p:40, pp:35, t:'normal'}, 'Rayo': {p:60, pp:20, t:TYPES.ELEC}, 'Fuego': {p:60, pp:20, t:TYPES.FUEGO}, 
+        'Agua': {p:60, pp:20, t:TYPES.AGUA}, 'Hoja': {p:60, pp:20, t:TYPES.PLANTA}, 'Metal': {p:70, pp:15, t:TYPES.MECH},
+        'Oscuro': {p:70, pp:15, t:TYPES.DARK}, 'Ultimate': {p:120, pp:5, t:'normal'}
     };
 
-    /* === STATE === */
-    let game = { name:"Ing", credits:500, stage:1, team:[], activeIdx:0, enemy:null, turn:true, inv:{ball:5,great:1,ultra:0,potion:3,full:1,revive:1}, introStep:0 };
+    // ITEM UPDATE: NUEVOS ITEMS
+    const ITEMS = {
+        'ball': {n:"Data Ball", price:100, icon:"🔵", rate:1},
+        'ultra': {n:"Master Ball", price:1000, icon:"🟣", rate:3},
+        'pot': {n:"Poción HP", price:200, icon:"💊", heal:50},
+        'maxpot': {n:"Refrig. Líq.", price:600, icon:"🧪", heal:9999}, // Nuevo
+        'revive': {n:"Kit Reinicio", price:500, icon:"♻️"},
+        'chip': {n:"Chip Overclock", price:1200, icon:"💾", xp:100} // Nuevo
+    };
 
-    /* === LOGIN & INTRO === */
-    function login() {
-        const name = document.getElementById('inp-name').value;
-        const dob = document.getElementById('inp-dob').value;
-        if(!name || !dob) return alert("Fichaje incompleto.");
-        game.name = name.substring(0,8).toUpperCase();
-        document.getElementById('ui-name').innerText = game.name;
-        
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('intro-screen').style.display = 'flex';
-        
-        // Historia POKENGINEER
-        introLines[0] = `Bienvenido a la Planta, Ing. ${game.name}.`;
-        nextIntro();
-    }
+    /* === ESTADO DEL JUEGO === */
+    let game = {
+        playerName: "Engineer",
+        credits: 800, // Un poco más de inicio
+        floor: 1, team: [], active: 0, pokedex: [],
+        inv: { ball:5, ultra:0, pot:3, maxpot:1, revive:0, chip:0 },
+        playerX: 6, playerY: 6, mapData: [],
+        progress: 0, enemy: null, turn: true
+    };
 
-    // HISTORIA POKENGINEER
-    const introLines = [
-        "...",
-        "...", 
-        "La Red Energética Global está saturada por anomalías llamadas 'Pokes'.",
-        "Tu trabajo es simple: Capturarlos para reducir la carga del sistema.",
-        "Pero ten cuidado, cada 10 ciclos aparece un 'Jefe de Planta' que amenaza con fundir el núcleo.",
-        "Selecciona tu herramienta de trabajo inicial.",
-        "CHOICE", 
-        "Herramienta asignada. Turno iniciado."
-    ];
-    
-    function nextIntro() {
-        const txt = document.getElementById('intro-text');
-        const btn = document.getElementById('intro-btn');
-        if(game.introStep >= introLines.length) {
-            document.getElementById('intro-screen').style.display = 'none';
-            initBattle(); return;
-        }
-        if(introLines[game.introStep] === "CHOICE") {
-            txt.innerText = "ACCESO AL ARSENAL AUTORIZADO. ELIGE:"; 
-            btn.style.display = 'none';
-            document.getElementById('starter-select').style.display = 'flex';
+    let selectedStarterId = null;
+
+    /* === INTRO ANIMATION === */
+    const STORY_TEXT = "INICIANDO SISTEMA...\n\n> AÑO: 2140\n> UBICACIÓN: SECTOR CERO\n> ESTADO: CRÍTICO\n\nINFORME:\nEl núcleo de la IA Global ha sido corrompido.\nLas máquinas se han vuelto hostiles.\n\nTU MISIÓN:\nReiniciar el servidor central.\n\nCARGANDO INTERFAZ DE USUARIO...";
+
+    let charIndex = 0;
+    function typeWriter() {
+        if (charIndex < STORY_TEXT.length) {
+            document.getElementById("story-display").innerHTML += STORY_TEXT.charAt(charIndex);
+            charIndex++;
+            setTimeout(typeWriter, 30); // Velocidad de tipeo
         } else {
-            txt.innerText = introLines[game.introStep]; game.introStep++;
-        }
-    }
-
-    function pickStarter(id) {
-        game.team.push(createMon(id, 5));
-        document.getElementById('starter-select').style.display = 'none';
-        document.getElementById('intro-btn').style.display = 'block';
-        game.introStep++; nextIntro();
-    }
-
-    /* === ENGINE === */
-    function createMon(id, lvl, shiny=false) {
-        const p = DEX.find(x => x.id === id) || DEX[4];
-        // SHINY RATE: 30% (0.3)
-        const isShiny = shiny || Math.random() < 0.3;
-        // Build moves
-        const myMoves = p.moves.map(n => ({...MOVES_DB[n], name:n, maxPP:MOVES_DB[n].pp}));
-        return { ...p, n:p.n, lvl:lvl, maxHp: 50+lvl*15+(p.boss?300:0), hp: 50+lvl*15+(p.boss?300:0), xp:0, xpNext:50+lvl*20, moves:myMoves, shiny:isShiny };
-    }
-
-    function initBattle() {
-        game.turn = true;
-        if(game.stage % 10 === 0) {
-            // Rotar Jefes (99, 100, 101)
-            const bossId = 99 + (Math.floor((game.stage/10)-1) % 3);
-            game.enemy = createMon(bossId, game.stage+5); game.enemy.n = "JEFE DE PLANTA #" + (game.stage/10);
-            document.getElementById('boss-alert').style.display = 'block';
-            setTimeout(()=>document.getElementById('boss-alert').style.display='none', 3000);
-        } else {
-            const id = Math.floor(Math.random()*30); // 0-29
-            const lvl = Math.max(1, game.team[game.activeIdx].lvl + Math.floor(Math.random()*2)-1);
-            game.enemy = createMon(id, lvl);
-        }
-        log(`Señal detectada: ¡${game.enemy.n} en el sector!`);
-        if(game.enemy.shiny) log(`<span class='log-crit'>¡ANOMALÍA CROMÁTICA (SHINY) DETECTADA!</span>`);
-        updateUI();
-    }
-
-    /* === COMBAT & LEARNING === */
-    function attack(i) {
-        if(!game.turn) return;
-        const p = game.team[game.activeIdx];
-        const m = p.moves[i];
-        if(m.pp <= 0) return alert("Sin energía (PP).");
-        
-        m.pp--;
-        document.getElementById('device').style.borderColor = TYPE_COLORS[m.t];
-        document.getElementById('player-sprite').classList.add('attacking-right');
-        setTimeout(()=>document.getElementById('player-sprite').classList.remove('attacking-right'), 300);
-
-        const e = game.enemy;
-        let mult = CHART[m.t]?.[e.t] || 1;
-        const dmg = Math.floor((p.lvl*0.5 + m.pwr*0.2) * mult * ((Math.random()*0.4)+0.8));
-        
-        setTimeout(() => {
-            e.hp -= dmg;
-            document.getElementById('enemy-sprite').classList.add('hit');
-            setTimeout(()=>document.getElementById('enemy-sprite').classList.remove('hit'), 400);
-            
-            let msg = `<span class='log-txt'>> ${p.n} activa</span> <span class='log-move'>${m.name}</span> <span class='log-dmg'>-${dmg}HP</span>`;
-            if(mult > 1) msg += " <span class='log-eff'>¡EFECTIVO!</span>";
-            if(mult < 1) msg += " <span class='log-weak'>Resistido</span>";
-            log(msg);
-            
-            document.getElementById('device').style.borderColor = 'var(--neon-blue)';
-
-            if(e.hp <= 0) { e.hp = 0; winBattle(); return; }
-            endTurn();
-        }, 300);
-    }
-
-    function endTurn() {
-        game.turn = false; updateUI();
-        setTimeout(() => {
-            const e = game.enemy, p = game.team[game.activeIdx];
-            if(e.hp <= 0) return;
-            
-            const m = e.moves[Math.floor(Math.random()*e.moves.length)];
-            const dmg = Math.floor((e.lvl*0.5 + m.pwr*0.2) * ((Math.random()*0.4)+0.8));
-            
-            document.getElementById('enemy-sprite').classList.add('attacking-left');
-            setTimeout(()=>document.getElementById('enemy-sprite').classList.remove('attacking-left'), 300);
-            
             setTimeout(() => {
-                p.hp -= dmg;
-                document.getElementById('player-sprite').classList.add('hit');
-                setTimeout(()=>document.getElementById('player-sprite').classList.remove('hit'), 400);
-                log(`<span class='log-txt'>> ${e.n} responde con</span> <span class='log-move'>${m.name}</span> <span class='log-crit'>-${dmg}HP</span>`);
-                
-                if(p.hp <= 0) {
-                    p.hp = 0;
-                    if(!game.team.some(m=>m.hp>0)) { alert("SISTEMA CRÍTICO. REINICIANDO..."); location.reload(); }
-                    else openTeam();
-                }
-                game.turn = true; updateUI();
-            }, 300);
-        }, 1000);
+                document.getElementById('intro-form').classList.add('visible');
+            }, 500);
+        }
     }
+    window.onload = () => {
+        setTimeout(typeWriter, 500);
+    };
 
-    function winBattle(cap=false) {
-        const e = game.enemy, p = game.team[game.activeIdx];
-        const r = 50 + e.lvl*10;
-        game.credits += r;
-        if(!cap) log(`<span class='log-eff'>AMENAZA ELIMINADA. +${r} CR.</span>`);
-        
-        // XP & LEVEL UP
-        p.xp += r;
-        if(p.xp >= p.xpNext) {
-            p.lvl++; p.xp=0; p.maxHp+=10; p.hp=p.maxHp;
-            log(`<span class='log-crit'>¡${p.n} OPTIMIZADO A NIVEL ${p.lvl}!</span>`);
-            
-            // CHECK LEARNSET
-            const newMoveName = LEARNSETS[p.t]?.[p.lvl];
-            if(newMoveName) {
-                const moveData = MOVES_DB[newMoveName];
-                const newMoveObj = { ...moveData, name: newMoveName, maxPP: moveData.pp };
-                
-                if(p.moves.length < 4) {
-                    p.moves.push(newMoveObj);
-                    log(`<span class='log-eff'>¡Módulo ${newMoveName} instalado!</span>`);
-                } else {
-                    const forgot = p.moves.shift(); 
-                    p.moves.push(newMoveObj);
-                    log(`<span class='log-eff'>¡${forgot.name} eliminado. ${newMoveName} instalado!</span>`);
-                }
+    /* === SETUP === */
+    window.addEventListener('keydown', (e) => {
+        const isMap = document.getElementById('view-map').classList.contains('active');
+        const noModal = document.querySelector('.modal[style*="flex"]') === null;
+        if (isMap && noModal) {
+            switch(e.key.toLowerCase()) {
+                case 'arrowup': case 'w': movePlayer(0, -1); break;
+                case 'arrowdown': case 's': movePlayer(0, 1); break;
+                case 'arrowleft': case 'a': movePlayer(-1, 0); break;
+                case 'arrowright': case 'd': movePlayer(1, 0); break;
             }
         }
+    });
 
-        if(!game.enemy.boss || cap) game.stage++;
-        setTimeout(() => initBattle(), 2000);
+    function selectStarter(id) {
+        selectedStarterId = id;
+        document.querySelectorAll('.starter-card').forEach(c => c.classList.remove('selected'));
+        const cards = document.querySelectorAll('.starter-card');
+        if(id===2) cards[0].classList.add('selected');
+        if(id===5) cards[1].classList.add('selected');
+        if(id===4) cards[2].classList.add('selected');
     }
 
-    /* === UI UTILS === */
-    function log(html) {
-        const box = document.getElementById('dialogue-box');
-        const div = document.createElement('div');
-        div.className = 'log-entry';
-        div.innerHTML = html;
-        box.insertBefore(div, box.firstChild);
+    function confirmStart() {
+        const nameInput = document.getElementById('player-name-input').value.trim();
+        if(nameInput.length > 0) game.playerName = nameInput;
+        if(selectedStarterId === null) return alert("¡SELECCIONA UNA UNIDAD!");
+
+        document.getElementById('intro-screen').style.display = 'none';
+        startGame(selectedStarterId);
     }
 
-    function updateUI() {
-        document.getElementById('ui-cr').innerText = game.credits;
-        const p = game.team[game.activeIdx], e = game.enemy;
+    function startGame(starterId) {
+        document.getElementById('ui-player-name').innerText = game.playerName.toUpperCase();
+        game.team.push(createMon(starterId, 5));
+        game.pokedex.push(starterId);
+        generateMap();
+        renderMapUI();
+        switchView('map');
+    }
+
+    function switchView(v) {
+        document.querySelectorAll('.view-layer').forEach(e => e.classList.remove('active'));
+        document.getElementById(`view-${v}`).classList.add('active');
+        if(v==='map') renderMap();
+    }
+
+    /* === ANIMACION ENCUENTRO === */
+    function triggerEncounterAnim(callback) {
+        const l = document.getElementById('transition-layer');
+        l.classList.remove('anim-flash');
+        void l.offsetWidth; // trigger reflow
+        l.classList.add('anim-flash');
+        setTimeout(() => {
+            callback();
+        }, 250); // Cambio de vista en el punto más blanco
+    }
+
+    /* === MAPA === */
+    function generateMap() {
+        game.mapData = [];
+        game.progress = 0; 
+        document.getElementById('map-container').style.gridTemplateColumns = `repeat(${MAP_SIZE}, 1fr)`;
+        document.getElementById('map-container').style.gridTemplateRows = `repeat(${MAP_SIZE}, 1fr)`;
+
+        for(let y=0; y<MAP_SIZE; y++) {
+            let row = [];
+            for(let x=0; x<MAP_SIZE; x++) {
+                if(x===0||x===MAP_SIZE-1||y===0||y===MAP_SIZE-1) row.push(1); 
+                else if(Math.random()<0.1) row.push(1); 
+                else if(Math.random()<0.3) row.push(2); 
+                else row.push(0);
+            }
+            game.mapData.push(row);
+        }
+        let mid = Math.floor(MAP_SIZE/2);
+        game.mapData[mid][mid] = 0;
+        game.playerX = mid; game.playerY = mid;
+    }
+
+    function renderMap() {
+        const c = document.getElementById('map-container'); c.innerHTML = '';
+        for(let y=0; y<MAP_SIZE; y++) {
+            for(let x=0; x<MAP_SIZE; x++) {
+                const t = game.mapData[y][x];
+                const d = document.createElement('div');
+                d.className = 'tile';
+                if(t===1) d.classList.add('tile-wall');
+                else if(t===2) d.classList.add('tile-grass');
+                else if(t===3) { d.classList.add('tile-boss'); d.innerHTML='⚠️'; }
+                else if(t===4) { d.classList.add('tile-lock'); d.innerHTML='🔒'; } 
+                else d.classList.add('tile-floor');
+                if(x===game.playerX && y===game.playerY) d.innerHTML = '<div class="entity-player">🧑‍🚀</div>';
+                c.appendChild(d);
+            }
+        }
+        renderMapUI();
+    }
+
+    function renderMapUI() {
+        document.getElementById('map-floor').innerText = game.floor;
+        document.getElementById('kill-count').innerText = game.progress;
+        document.getElementById('map-cr').innerText = game.credits;
+    }
+
+    function movePlayer(dx, dy) {
+        const nx = game.playerX + dx, ny = game.playerY + dy;
+        const t = game.mapData[ny][nx];
+        if(t===1) return; 
+
+        game.playerX = nx; game.playerY = ny;
+        renderMap();
+
+        if(t===3) {
+            triggerEncounterAnim(() => initBattle(true));
+        } else if(t===2 && Math.random()<0.3) {
+            triggerEncounterAnim(() => initBattle(false));
+        }
+    }
+
+    /* === BATALLA === */
+    function createMon(id, lvl) {
+        const d = RAW_DB[id];
+        const hp = Math.floor(60 + lvl*12);
+        let mvs = ['Golpe'];
+        if(d.t===TYPES.FUEGO) mvs.push('Fuego');
+        if(d.t===TYPES.AGUA) mvs.push('Agua');
+        if(d.t===TYPES.ELEC) mvs.push('Rayo');
+        if(d.t===TYPES.MECH) mvs.push('Metal');
+        if(d.t===TYPES.PLANTA) mvs.push('Hoja');
+        if(d.t===TYPES.DARK) mvs.push('Oscuro');
+        if(lvl>20) mvs.push('Ultimate');
         
-        // Render HUDs
-        renderHUD('player', p); renderHUD('enemy', e);
+        let finalMoves = mvs.map(k=>({n:k, ...MOVES[k], maxPP:MOVES[k].pp, pp:MOVES[k].pp}));
+        return { 
+            id:id, ...d, lvl:lvl, maxHp:hp, hp:hp, xp:0, xpMax:lvl*50, 
+            moves:finalMoves, shiny: Math.random()<0.05
+        };
+    }
+
+    function initBattle(isBoss) {
+        game.turn = true;
+        let id, lvl;
+        if(isBoss) {
+            id = (game.floor * 10) - 1; 
+            lvl = game.floor * 10 + 5;
+            game.enemy = createMon(id, lvl);
+            game.enemy.maxHp *= 2; game.enemy.hp = game.enemy.maxHp;
+            game.enemy.boss = true;
+        } else {
+            const minId = (game.floor-1)*10;
+            const maxId = minId + 8; 
+            id = Math.floor(Math.random()*(maxId-minId+1)) + minId;
+            if(id >= RAW_DB.length) id = RAW_DB.length-1;
+            lvl = Math.max(1, (game.floor-1)*10 + Math.floor(Math.random()*8));
+            game.enemy = createMon(id, lvl);
+        }
+        switchView('battle');
+        log(`ENEMIGO DETECTADO: ${game.enemy.n}`);
+        updateBattleUI();
+    }
+
+    function attack(i) {
+        if(!game.turn) return;
+        const p = game.team[game.active];
+        const m = p.moves[i];
+        if(m.pp<=0) return alert("Sin Energía (PP)");
         
-        // Render Moves
-        const grid = document.getElementById('combat-grid');
-        grid.innerHTML = '';
-        p.moves.forEach((m, i) => {
-            const btn = document.createElement('button');
-            btn.className = 'atk-btn'; btn.disabled = m.pp <= 0;
-            const c = TYPE_COLORS[m.t];
-            btn.innerHTML = `<div class="atk-name" style="color:${c}">${m.name}</div><div class="pp-badge">PP:${m.pp}/${m.maxPP}</div><div class="type-dot" style="background:${c}"></div>`;
-            btn.onclick = () => attack(i);
-            grid.appendChild(btn);
+        m.pp--;
+        document.getElementById('p-sprite').parentElement.classList.add('attack-anim');
+        setTimeout(()=>document.getElementById('p-sprite').parentElement.classList.remove('attack-anim'),300);
+
+        const dmg = Math.floor((p.lvl*0.5 + m.p/2) * (Math.random()*0.4 + 0.8));
+        game.enemy.hp -= dmg;
+        log(`${p.n} usa ${m.n}! Daño: ${dmg}`);
+
+        updateBattleUI();
+
+        if(game.enemy.hp<=0) {
+            game.enemy.hp=0;
+            setTimeout(winBattle, 1000);
+        } else {
+            game.turn = false;
+            setTimeout(enemyAttack, 1000);
+        }
+    }
+
+    function enemyAttack() {
+        const e = game.enemy;
+        const p = game.team[game.active];
+        const dmg = Math.floor((e.lvl*0.5 + 20) * (Math.random()*0.4 + 0.8));
+        
+        document.getElementById('e-sprite').parentElement.classList.add('attack-anim');
+        setTimeout(()=>document.getElementById('e-sprite').parentElement.classList.remove('attack-anim'),300);
+
+        p.hp -= dmg;
+        log(`${e.n} ataca! Daño: ${dmg}`);
+
+        if(p.hp<=0) {
+            p.hp=0;
+            log("¡SISTEMA ABATIDO!");
+            if(game.team.some(m=>m.hp>0)) openTeam();
+            else {
+                alert("FALLO DE MISIÓN. REINICIANDO PROTOCOLO...");
+                game.team.forEach(m=>m.hp=m.maxHp);
+                game.playerX=Math.floor(MAP_SIZE/2); game.playerY=game.playerX;
+                switchView('map');
+            }
+        }
+        game.turn = true;
+        updateBattleUI();
+    }
+
+    function winBattle() {
+        const reward = game.enemy.lvl * 20;
+        game.credits += reward;
+        const p = game.team[game.active];
+        // XP BOOSTED (x2.5)
+        const earnedXP = game.enemy.lvl * 25; 
+        gainXp(p, earnedXP);
+
+        if(game.enemy.boss) {
+            alert(`SECTOR ${game.floor} PURGADO.`);
+            game.floor++;
+            if(game.floor > 5) { alert("¡NÚCLEO REINICIADO!"); game.floor=1; location.reload(); return; }
+            generateMap();
+        } else {
+            game.progress++;
+            game.mapData[game.playerY][game.playerX] = 0; 
+            if(game.progress === ENCOUNTERS_TO_BOSS) {
+                let bx, by;
+                do { bx=Math.floor(Math.random()*MAP_SIZE); by=Math.floor(Math.random()*MAP_SIZE); }
+                while(game.mapData[by][bx] === 1);
+                game.mapData[by][bx] = 3;
+                alert("¡SEÑAL DE JEFE DETECTADA!");
+            }
+        }
+        setTimeout(()=>switchView('map'), 1500);
+    }
+
+    function gainXp(mon, amount) {
+        mon.xp += amount;
+        log(`${mon.n} obtuvo ${amount} XP.`);
+        if(mon.xp >= mon.xpMax) {
+            mon.lvl++; mon.xp=0; mon.maxHp+=15; mon.hp=mon.maxHp; mon.xpMax=mon.lvl*50;
+            log(`¡SUBIDA DE NIVEL: ${mon.lvl}!`);
+        }
+        updateBattleUI();
+    }
+
+    function runAway() {
+        if(game.enemy.boss) return log("¡ERROR! Retirada bloqueada.");
+        if(Math.random()>0.4) {
+            log("Retirada táctica exitosa.");
+            setTimeout(()=>switchView('map'),500);
+        } else {
+            log("Fallo al retirar.");
+            setTimeout(enemyAttack,500);
+        }
+    }
+
+    function updateBattleUI() {
+        const p = game.team[game.active];
+        if (!p) return;
+        const e = game.enemy;
+        
+        document.getElementById('p-name').innerText = p.n;
+        document.getElementById('p-lvl').innerText = "Nv."+p.lvl;
+        document.getElementById('p-sprite').innerText = p.s;
+        
+        let php = (p.hp/p.maxHp)*100;
+        document.getElementById('p-hp').style.width = php+"%";
+        document.getElementById('p-hp-txt').innerText = `${p.hp}/${p.maxHp}`;
+        
+        let pxp = (p.xp / p.xpMax) * 100;
+        document.getElementById('p-xp').style.width = pxp+"%";
+
+        if(e) {
+            document.getElementById('e-name').innerText = e.n;
+            document.getElementById('e-lvl').innerText = "Nv."+e.lvl;
+            document.getElementById('e-sprite').innerText = e.s;
+            document.getElementById('e-hp').style.width = ((e.hp/e.maxHp)*100)+"%";
+        }
+
+        const mg = document.getElementById('combat-menu'); mg.innerHTML='';
+        p.moves.forEach((m,i)=>{
+            const color = TYPE_COLORS[m.t] || TYPE_COLORS['normal'];
+            mg.innerHTML += `
+            <button class="atk-btn" onclick="attack(${i})" 
+                style="background:${color}; border-color:rgba(255,255,255,0.5);">
+                ${m.n}
+                <small>PP:${m.pp}/${m.maxPP}</small>
+            </button>`;
         });
     }
 
-    function renderHUD(side, mon) {
-        document.getElementById(side+'-name').innerText = mon.n;
-        document.getElementById(side+'-lvl').innerText = "Nv." + mon.lvl;
-        document.getElementById(side+'-sprite').innerText = mon.s;
-        if(mon.shiny) document.getElementById(side+'-sprite').classList.add('shiny');
-        else document.getElementById(side+'-sprite').classList.remove('shiny');
-        
-        const tag = document.getElementById(side+'-type');
-        tag.innerText = mon.t; tag.style.background = TYPE_COLORS[mon.t];
-        
-        const pct = (mon.hp / mon.maxHp)*100;
-        document.getElementById(side+'-hp-bar').style.width = pct + '%';
-        if(side === 'player') document.getElementById('player-hp-txt').innerText = `${mon.hp}/${mon.maxHp}`;
+    function log(t) {
+        const c = document.getElementById('console');
+        c.innerHTML = `<div class="log-entry">> ${t}</div>` + c.innerHTML;
     }
 
-    /* === SHOP & TEAM === */
-    function openBag() { document.getElementById('modal-bag').style.display='flex'; showShopTab('inventory'); }
-    function showShopTab(tab) {
-        document.getElementById('shop-container').style.display = tab==='shop'?'grid':'none';
-        document.getElementById('inv-container').style.display = tab==='inventory'?'grid':'none';
-        const c = document.getElementById(tab==='shop'?'shop-container':'inv-container');
-        c.innerHTML = '';
-        const src = tab==='shop' ? ITEMS_DB : game.inv;
-        
-        for(let key in src) {
-            if(tab==='inventory' && src[key] <= 0) continue;
-            const item = ITEMS_DB[key]; 
-            c.innerHTML += `
-                <div class="shop-card">
-                    <div style="font-size:30px;">${item.icon}</div>
-                    <div style="font-weight:bold;">${item.n}</div>
-                    <div style="font-size:10px; color:#888;">${tab==='shop'?item.price+' CR':'Cant: '+src[key]}</div>
-                    <button class="buy-btn" onclick="${tab==='shop'?`buy('${key}')`:`use('${key}')`}">${tab==='shop'?'COMPRAR':'USAR'}</button>
+    /* === MENUS Y MODALS === */
+    function openBag() {
+        const l = document.getElementById('bag-list'); l.innerHTML='';
+        for(let k in game.inv) {
+            if(game.inv[k]>0) {
+                const it = ITEMS[k];
+                l.innerHTML += `
+                <div class="card">
+                    <div class="card-icon">${it.icon}</div>
+                    <div>${it.n}</div><small>x${game.inv[k]}</small><br>
+                    <button class="ui-btn" style="margin-top:5px; width:100%" onclick="useItem('${k}')">USAR</button>
                 </div>`;
+            }
         }
+        document.getElementById('modal-bag').style.display='flex';
     }
 
-    function buy(k) {
-        if(game.credits < ITEMS_DB[k].price) return alert("Fondos insuficientes.");
-        game.credits -= ITEMS_DB[k].price; game.inv[k]++;
-        document.getElementById('ui-cr').innerText = game.credits;
-        showShopTab('shop');
-    }
-
-    function use(k) {
-        // Capture
-        if(['ball','great','ultra'].includes(k)) {
-            if(!game.turn) return alert("Espera tu turno.");
+    function useItem(k) {
+        const inBattle = document.getElementById('view-battle').classList.contains('active');
+        if(k.includes('ball')) {
+            if(!inBattle) return alert("Solo combate");
+            if(game.enemy.boss) return alert("Objetivo Inmune");
             game.inv[k]--;
             closeModal('modal-bag');
-            log(`Lanzando ${ITEMS_DB[k].n}...`);
-            if(game.enemy.boss && k!=='ultra') { log("<span class='log-crit'>¡ERROR! Jefe inmune a captura estándar.</span>"); endTurn(); return; }
-            
-            const rate = k==='great'?2 : k==='ultra'?100 : 1;
-            const chance = (1 - (game.enemy.hp/game.enemy.maxHp)) * rate;
-            setTimeout(() => {
-                if(Math.random() < chance) { 
-                    log("<span class='log-capture'>¡UNIDAD ASIMILADA EXITOSAMENTE!</span>"); 
-                    
-                    // LÓGICA DE CAPTURA MEJORADA: VIDA COMPLETA
+            log("Ejecutando captura...");
+            setTimeout(()=>{
+                const rate = ITEMS[k].rate * 0.3 + (1 - game.enemy.hp/game.enemy.maxHp);
+                if(Math.random() < rate) {
                     game.enemy.hp = game.enemy.maxHp; 
-                    game.team.push(game.enemy); 
-                    
-                    winBattle(true); 
+                    game.team.push(game.enemy);
+                    if(!game.pokedex.includes(game.enemy.id)) game.pokedex.push(game.enemy.id);
+                    log("¡Unidad asimilada exitosamente!");
+                    setTimeout(()=>winBattle(),1000);
+                } else {
+                    log("Fallo de asimilación.");
+                    setTimeout(enemyAttack, 1000);
                 }
-                else { log("<span class='log-weak'>Fallo en la contención.</span>"); endTurn(); }
             }, 1000);
-        } else {
-            // Potion/Revive/Full
-            closeModal('modal-bag'); openTeam(false, true, k);
+        } else if(ITEMS[k].heal || k==='revive' || ITEMS[k].xp) {
+            closeModal('modal-bag');
+            openTeam(false, true, k);
         }
     }
 
     let pendingItem = null;
-    function openTeam(swap=false, select=false, item=null) {
-        pendingItem = item;
-        const l = document.getElementById('team-list'); l.innerHTML = '';
-        game.team.forEach((m,i) => {
-            const div = document.createElement('div');
-            div.style.background='#111'; div.style.padding='10px'; div.style.display='flex'; div.style.justifyContent='space-between'; div.style.alignItems='center';
-            div.innerHTML = `<div>${m.s} <strong>${m.n}</strong> Nv.${m.lvl} <br><small>HP:${m.hp}/${m.maxHp}</small></div>
-                ${select ? `<button onclick="applyItem(${i})">USAR</button>` : (m.hp>0 && i!==game.activeIdx ? `<button onclick="swap(${i})">CAMBIAR</button>` : '')}`;
-            l.appendChild(div);
+    function openTeam(swap=false, itemMode=false, itemKey=null) {
+        pendingItem = itemKey;
+        const l = document.getElementById('team-list'); l.innerHTML='';
+        game.team.forEach((m,i)=>{
+            let btn = '';
+            if(itemMode) btn = `<button class="ui-btn" onclick="applyItem(${i})">USAR</button>`;
+            else if(i!==game.active && m.hp>0) btn = `<button class="ui-btn" onclick="swapMon(${i})">CAMBIAR</button>`;
+            l.innerHTML += `
+            <div style="background:#111; border:1px solid #333; padding:10px; display:flex; align-items:center; gap:10px;">
+                <div style="font-size:30px;">${m.s}</div>
+                <div style="flex-grow:1;">
+                    <div style="font-weight:bold; color:${i===game.active?'var(--neon-green)':'#fff'}">${m.n} Nv.${m.lvl}</div>
+                    <div style="font-size:10px; color:#aaa;">HP: ${m.hp}/${m.maxHp}</div>
+                </div>
+                <div>${btn}</div>
+            </div>`;
         });
-        document.getElementById('modal-team').style.display = 'flex';
+        document.getElementById('modal-team').style.display='flex';
     }
 
-    function applyItem(i) {
-        const m = game.team[i];
-        if(pendingItem==='potion') {
-            m.hp = Math.min(m.maxHp, m.hp+50);
-            log(`<span class='log-heal'>Reparado parcial: ${m.n}</span>`);
+    function applyItem(idx) {
+        const m = game.team[idx];
+        const it = ITEMS[pendingItem];
+        let used = false;
+
+        if(pendingItem==='pot' || pendingItem==='maxpot') {
+            if(m.hp < m.maxHp) {
+                m.hp += it.heal;
+                if(m.hp > m.maxHp) m.hp = m.maxHp;
+                used = true;
+            } else alert("HP al máximo");
         }
         else if(pendingItem==='revive') {
-            m.hp = Math.floor(m.maxHp/2);
-            log(`<span class='log-heal'>Reiniciado: ${m.n}</span>`);
+            if(m.hp <= 0) { m.hp = Math.floor(m.maxHp/2); used=true; }
+            else alert("Unidad operativa");
         }
-        else if(pendingItem==='full') {
-            if(m.hp >= m.maxHp && m.moves.every(mv => mv.pp === mv.maxPP)) return alert("Sistemas óptimos.");
-            m.hp = m.maxHp;
-            m.moves.forEach(mv => mv.pp = mv.maxPP); // Restaurar PP
-            log(`<span class='log-heal'>¡Restauración Total de ${m.n}!</span>`);
+        else if(it.xp) {
+            gainXp(m, it.xp);
+            used = true;
+            alert("Chip instalado. Rendimiento aumentado.");
         }
-        
-        game.inv[pendingItem]--;
-        closeModal('modal-team');
-        if(game.turn) endTurn(); else updateUI();
+
+        if(used) {
+            game.inv[pendingItem]--;
+            closeModal('modal-team');
+            const inBattle = document.getElementById('view-battle').classList.contains('active');
+            if(inBattle) { updateBattleUI(); if(game.turn) setTimeout(enemyAttack, 500); }
+            else openTeam();
+        }
     }
 
-    function swap(i) { game.activeIdx = i; closeModal('modal-team'); updateUI(); log(`Unidad desplegada: ${game.team[i].n}`); }
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function swapMon(idx) {
+        game.active = idx;
+        closeModal('modal-team');
+        const inBattle = document.getElementById('view-battle').classList.contains('active');
+        if(inBattle) {
+            updateBattleUI();
+            log(`Activando: ${game.team[idx].n}`);
+            game.turn = false;
+            setTimeout(enemyAttack, 1000);
+        }
+    }
+
+    function openShop() {
+        document.getElementById('shop-cr-disp').innerText = game.credits;
+        const l = document.getElementById('shop-list'); l.innerHTML='';
+        for(let k in ITEMS) {
+            const it = ITEMS[k];
+            l.innerHTML += `
+            <div class="card">
+                <div class="card-icon">${it.icon}</div>
+                <div>${it.n}</div><div style="color:gold">${it.price}CR</div>
+                <button class="ui-btn" style="margin-top:5px; width:100%" onclick="buy('${k}')">COMPRAR</button>
+            </div>`;
+        }
+        document.getElementById('modal-shop').style.display='flex';
+    }
+
+    function buy(k) {
+        const p = ITEMS[k].price;
+        if(game.credits>=p) {
+            game.credits-=p; game.inv[k]++;
+            document.getElementById('shop-cr-disp').innerText = game.credits;
+            renderMapUI();
+        } else alert("Créditos insuficientes");
+    }
+
+    function openPokedex() {
+        const l = document.getElementById('dex-list'); l.innerHTML='';
+        RAW_DB.forEach((dbMon, i) => {
+            const caught = game.pokedex.includes(i);
+            l.innerHTML += `
+            <div style="background:${caught?'#111':'#000'}; border:1px solid ${caught?'var(--neon-blue)':'#333'}; padding:5px; display:flex; align-items:center;">
+                <div style="width:30px; font-size:20px;">${caught ? dbMon.s : '❓'}</div>
+                <div style="color:${caught?'#fff':'#555'}">#${i} ${caught ? dbMon.n : 'UNKNOWN'}</div>
+                <div style="margin-left:auto; font-size:10px; color:#aaa;">${caught ? dbMon.t.toUpperCase() : ''}</div>
+            </div>`;
+        });
+        document.getElementById('modal-dex').style.display='flex';
+    }
+
+    function closeModal(id) { document.getElementById(id).style.display='none'; }
 
 </script>
 </body>
