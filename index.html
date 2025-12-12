@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POKENGINEER v25.0</title>
+    <title>POKENGINEER v27.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -12,15 +12,9 @@
             --neon-green: #00ff9d;
             --neon-pink: #ff0055;
             --neon-gold: #ffd700;
-            --neon-purple: #bd00ff;
             
             --font-head: 'Orbitron', sans-serif;
             --font-body: 'Rajdhani', sans-serif;
-
-            /* Variables Dinámicas de Mapa */
-            --map-wall: #222;
-            --map-floor: #050505;
-            --map-accent: #00f3ff;
         }
 
         body {
@@ -40,7 +34,7 @@
             overflow: hidden;
         }
 
-        /* --- CAPA DE TRANSICIÓN (FLASH) --- */
+        /* --- EFECTOS VISUALES --- */
         #transition-layer {
             position: absolute; top:0; left:0; width:100%; height:100%;
             background: #fff; opacity: 0; pointer-events: none; z-index: 999;
@@ -53,24 +47,28 @@
             100% { opacity: 0; pointer-events: none; }
         }
 
-        /* --- PANTALLA DE INICIO / HISTORIA --- */
+        .evo-active { animation: evolutionAnim 2s ease-in-out; }
+        @keyframes evolutionAnim {
+            0% { filter: brightness(1) hue-rotate(0deg); transform: scale(1); }
+            50% { filter: brightness(10) hue-rotate(180deg); transform: scale(1.2); }
+            100% { filter: brightness(1) hue-rotate(0deg); transform: scale(1); }
+        }
+
+        /* --- INTRO --- */
         #intro-screen {
             position: absolute; top:0; left:0; width:100%; height:100%;
             background: #000; z-index: 100;
             display: flex; flex-direction: column; padding: 30px; box-sizing: border-box;
             overflow-y: auto;
         }
-        
         .typewriter-text {
             color: var(--neon-green); font-family: 'Courier New', monospace;
             font-size: 14px; line-height: 1.6; margin-bottom: 20px;
             border-left: 2px solid var(--neon-blue); padding-left: 10px;
             white-space: pre-wrap;
         }
-
         #intro-form { display: none; opacity: 0; transition: opacity 1s; }
         #intro-form.visible { display: flex; opacity: 1; flex-direction: column; }
-
         .input-group { margin-bottom: 20px; }
         input {
             background: #111; border: 1px solid var(--neon-blue); color: #fff;
@@ -87,30 +85,34 @@
         }
 
         /* --- VISTAS --- */
-        .view-layer {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            display: none; flex-direction: column; z-index: 10;
-            background: #000;
-        }
+        .view-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; z-index: 10; background: #000; }
         .view-layer.active { display: flex; }
 
-        /* ================= MAPA ================= */
+        /* ================= MAPA (ESTILO CLÁSICO) ================= */
         #map-container {
             flex-grow: 1; display: grid; gap: 1px; background: #111;
             align-content: center; justify-content: center;
         }
         .tile { display: flex; justify-content: center; align-items: center; font-size: 14px; position: relative; }
         
-        /* Estilos dinámicos del mapa */
-        .tile-wall { background: var(--map-wall); }
-        .tile-floor { background: var(--map-floor); }
-        .tile-grass { 
-            background: rgba(255, 255, 255, 0.05); 
-            border: 1px solid var(--map-accent); 
-            opacity: 0.8;
-        }
-        .tile-boss { background: rgba(255, 0, 85, 0.2); border: 1px solid var(--neon-pink); animation: pulseRed 1s infinite; }
+        /* RESTAURADO: Visualización clara de tiles */
+        .tile-wall { background: #222; }
+        .tile-floor { background: #050505; }
         
+        /* ZONAS DE BATALLA CLARAS */
+        .tile-grass { 
+            background: rgba(0, 243, 255, 0.1); 
+            border: 1px solid var(--neon-green); 
+            box-shadow: inset 0 0 5px rgba(0, 255, 157, 0.2);
+        }
+        .tile-boss { 
+            background: rgba(255, 0, 85, 0.3); 
+            border: 2px solid var(--neon-pink); 
+            animation: pulseRed 1s infinite; 
+            font-size: 18px;
+        }
+        .tile-lock { background: #111; border: 1px dashed #555; opacity: 0.5; }
+
         .entity-player { font-size: 24px; z-index: 5; text-shadow: 0 0 10px var(--neon-blue); }
 
         #map-ui {
@@ -119,6 +121,10 @@
         }
         .map-stats { display: flex; justify-content: space-between; font-size: 12px; color: var(--neon-blue); background: #000; padding: 5px; border: 1px solid #333; }
         
+        .floor-nav { display:flex; align-items:center; gap:10px; }
+        .floor-nav button { background:#222; color:#fff; border:1px solid var(--neon-blue); width:24px; height:24px; font-weight:bold; cursor:pointer;}
+        .floor-nav button:hover { background: var(--neon-blue); color:#000; }
+
         .dpad-container { display: flex; justify-content: center; align-items: center; flex-grow: 1;}
         .dpad { display: grid; grid-template-columns: 40px 40px 40px; grid-template-rows: 40px 40px 40px; }
         .dpad-btn { background: #222; border: 1px solid #444; color: #fff; display: flex; justify-content: center; align-items: center; cursor: pointer; user-select: none; }
@@ -145,18 +151,22 @@
             display: flex; justify-content: center; align-items: center;
             clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%);
             box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+            transition: all 0.5s;
         }
         .enemy .holo-chip { border-color: var(--neon-pink); box-shadow: 0 0 15px rgba(255, 0, 85, 0.3); }
 
         .holo-sprite { font-size: 70px; filter: drop-shadow(0 0 5px rgba(255,255,255,0.5)); animation: holoFloat 3s ease-in-out infinite; }
         .shiny .holo-sprite { filter: hue-rotate(180deg) drop-shadow(0 0 10px var(--neon-gold)); }
 
-        .hud { width: 100%; padding: 5px; margin-top: 5px; background: rgba(0,0,0,0.8); border: 1px solid #333; border-left: 3px solid var(--neon-blue); font-size: 12px; }
+        .hud { width: 100%; padding: 5px; margin-top: 5px; background: rgba(0,0,0,0.8); border: 1px solid #333; border-left: 3px solid var(--neon-blue); font-size: 12px; position:relative; }
         .enemy .hud { border-left: none; border-right: 3px solid var(--neon-pink); text-align: right; }
         
+        .status-badge { position:absolute; top:-10px; right:0; background:purple; color:#fff; font-size:9px; padding:2px 4px; border-radius:3px; display:none; }
+        .status-burn { background: #f50; }
+        .status-psn { background: #a0a; }
+
         .bar-wrap { height: 6px; background: #222; margin-top: 4px; border-radius: 3px; overflow: hidden; position: relative; }
         .hp-fill { height: 100%; transition: width 0.5s; background: linear-gradient(90deg, #ff3333, #ffff00, #00ff00); }
-        
         .xp-wrap { height: 3px; background: #111; margin-top: 2px; width: 100%; }
         .xp-fill { height: 100%; background: var(--neon-blue); width: 0%; transition: width 0.5s; box-shadow: 0 0 5px var(--neon-blue); }
 
@@ -164,16 +174,13 @@
         .log-entry { margin-bottom: 2px; color: #ccc; }
         
         #controls { padding: 8px; background: #080808; border-top: 1px solid #333; display: grid; grid-template-columns: 2fr 1fr; gap: 6px; height: 140px; flex-shrink: 0; }
-        
-        .atk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+        .atk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; overflow-y:auto; max-height:100%; }
         
         .atk-btn { 
             font-size: 13px; text-align: center; padding: 10px 5px; 
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            border: 1px solid rgba(255,255,255,0.2); 
-            color: #fff; text-shadow: 0 1px 2px #000;
-            cursor: pointer; transition: filter 0.2s;
-            font-family: var(--font-body); font-weight: bold;
+            border: 1px solid rgba(255,255,255,0.2); color: #fff; text-shadow: 0 1px 2px #000;
+            cursor: pointer; transition: filter 0.2s; font-family: var(--font-body); font-weight: bold;
         }
         .atk-btn:active { filter: brightness(1.2); transform: translateY(2px); }
         .atk-btn small { font-size: 9px; opacity: 0.8; font-weight: normal; margin-top: 2px;}
@@ -197,40 +204,29 @@
 
 <div id="device">
     
-    <!-- CAPA TRANSICIÓN -->
     <div id="transition-layer"></div>
 
     <!-- PANTALLA INTRO -->
     <div id="intro-screen">
-        <div style="font-size:30px; margin-bottom:20px; color:var(--neon-blue); text-align:center;">💠 POKENGINEER v25</div>
-        
+        <div style="font-size:30px; margin-bottom:20px; color:var(--neon-blue); text-align:center;">💠 POKENGINEER v27</div>
         <div id="story-display" class="typewriter-text"></div>
-
         <div id="intro-form">
             <div class="input-group">
                 <label style="color:var(--neon-green); font-size:12px; display:block; margin-bottom:5px;">ID DE INGENIERO:</label>
                 <input type="text" id="player-name-input" placeholder="INGRESAR NOMBRE..." maxlength="12">
             </div>
-
             <div style="color:var(--neon-green); font-size:12px; margin-bottom:5px; text-align:center;">SELECCIONA UNIDAD INICIAL:</div>
             <div class="starter-container">
                 <div class="starter-card" onclick="selectStarter(2)">
-                    <div style="font-size:30px">⚡</div>
-                    <div style="color:#ff0">Sparky</div>
-                    <small>Agilidad</small>
+                    <div style="font-size:30px">⚡</div><div style="color:#ff0">Sparky</div><small>Agilidad</small>
                 </div>
                 <div class="starter-card" onclick="selectStarter(5)">
-                    <div style="font-size:30px">🔥</div>
-                    <div style="color:#f50">Ember</div>
-                    <small>Potencia</small>
+                    <div style="font-size:30px">🔥</div><div style="color:#f50">Ember</div><small>Potencia</small>
                 </div>
                 <div class="starter-card" onclick="selectStarter(4)">
-                    <div style="font-size:30px">💧</div>
-                    <div style="color:#0cf">Drip</div>
-                    <small>Blindaje</small>
+                    <div style="font-size:30px">💧</div><div style="color:#0cf">Drip</div><small>Blindaje</small>
                 </div>
             </div>
-
             <button onclick="confirmStart()" style="padding:15px; background:var(--neon-blue); color:#000; border:none; font-weight:bold; font-family:var(--font-head); cursor:pointer;">INICIAR SISTEMA</button>
         </div>
     </div>
@@ -244,7 +240,11 @@
             </div>
             <div style="text-align:right;">
                 <div style="font-size:9px; color:#888;">SECTOR</div>
-                <div style="color:#fff; font-weight:bold;">PISO <span id="map-floor">1</span></div>
+                <div class="floor-nav">
+                    <button onclick="changeFloor(-1)">▼</button>
+                    <div style="color:#fff; font-weight:bold; width:50px; text-align:center;">PISO <span id="map-floor">1</span></div>
+                    <button onclick="changeFloor(1)">▲</button>
+                </div>
             </div>
         </header>
         
@@ -278,20 +278,18 @@
         <header>
             <div class="header-title" style="color:var(--neon-pink)">ALERTA DE COMBATE</div>
         </header>
-
         <div id="arena">
-            <!-- Enemy -->
             <div class="mon-container enemy">
                 <div class="hud">
                     <div style="display:flex; justify-content:space-between;">
                         <span id="e-name">ENEMY</span> <span id="e-lvl" style="color:var(--neon-pink)">Nv.1</span>
                     </div>
                     <div class="bar-wrap"><div id="e-hp" class="hp-fill" style="width:100%"></div></div>
+                    <div id="e-status" class="status-badge"></div>
                 </div>
                 <div class="holo-chip"><div id="e-sprite" class="holo-sprite">🤖</div></div>
             </div>
 
-            <!-- Player -->
             <div class="mon-container player">
                 <div class="holo-chip"><div id="p-sprite" class="holo-sprite">🧑‍🚀</div></div>
                 <div class="hud">
@@ -299,6 +297,7 @@
                         <span id="p-name">PLAYER</span> <span id="p-lvl" style="color:var(--neon-green)">Nv.1</span>
                     </div>
                     <div class="bar-wrap"><div id="p-hp" class="hp-fill" style="width:100%"></div></div>
+                    <div id="p-status" class="status-badge"></div>
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
                         <div style="font-size:9px; color:var(--neon-blue);">XP</div>
                         <div class="xp-wrap"><div id="p-xp" class="xp-fill"></div></div>
@@ -307,9 +306,7 @@
                 </div>
             </div>
         </div>
-
         <div id="console"></div>
-
         <div id="controls">
             <div id="combat-menu" class="atk-grid"></div>
             <div style="display:grid; grid-template-rows:1fr 1fr 1fr; gap:2px;">
@@ -341,7 +338,17 @@
 
     <div id="modal-dex" class="modal">
         <div class="modal-title">BASE DE DATOS</div>
-        <div id="dex-list" class="grid-list" style="grid-template-columns: 1fr; gap:5px;"></div>
+        <div id="dex-list" class="grid-list" style="grid-template-columns: 1fr; gap:5px; height: 350px;"></div>
+        <div id="dex-detail" style="display:none; background:#111; padding:10px; border:1px solid var(--neon-blue); height: 350px;">
+            <div style="text-align:center; font-size:40px;" id="dd-sprite"></div>
+            <div style="text-align:center; color:var(--neon-gold); font-size:18px;" id="dd-name">NAME</div>
+            <div style="color:#aaa; font-size:12px; margin:10px 0; text-align:justify;" id="dd-desc">Desc...</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; font-size:12px;">
+                <div>TIPO: <span id="dd-type" style="color:#fff"></span></div>
+                <div>HP BASE: <span id="dd-hp"></span></div>
+            </div>
+            <button class="ui-btn" onclick="backDex()" style="margin-top:20px; width:100%">ATRÁS</button>
+        </div>
         <button class="ui-btn" onclick="closeModal('modal-dex')" style="margin-top:auto; padding:15px;">VOLVER</button>
     </div>
 
@@ -354,39 +361,82 @@
     
     // CONFIG COLORES
     const TYPES = { FUEGO:'fuego', AGUA:'agua', PLANTA:'planta', MECH:'mech', ELEC:'elec', DARK:'dark' };
-    
-    const TYPE_COLORS = {
-        'fuego': '#ff4400', 'agua': '#0088ff', 'planta': '#00cc44',
-        'mech': '#777777', 'elec': '#ddbb00', 'dark': '#6600cc', 'normal': '#444444'
-    };
+    const TYPE_COLORS = { 'fuego': '#ff4400', 'agua': '#0088ff', 'planta': '#00cc44', 'mech': '#777777', 'elec': '#ddbb00', 'dark': '#6600cc', 'normal': '#444444' };
 
     const RAW_DB = [
-        // PISO 1 (0-9) - Labs
-        {n:"Bit Bug", s:"🐞", t:TYPES.PLANTA}, {n:"Wire Worm", s:"🐛", t:TYPES.MECH}, {n:"Sparky", s:"⚡", t:TYPES.ELEC},
-        {n:"Pebble", s:"🪨", t:TYPES.MECH}, {n:"Drip", s:"💧", t:TYPES.AGUA}, {n:"Ember", s:"🔥", t:TYPES.FUEGO},
-        {n:"Leafy", s:"🍃", t:TYPES.PLANTA}, {n:"Batty", s:"🦇", t:TYPES.DARK}, {n:"Rat-X", s:"🐀", t:TYPES.MECH}, {n:"Slime", s:"🦠", t:TYPES.AGUA},
-        // PISO 2 (10-19) - Industrial
-        {n:"Cyber Wolf", s:"🐺", t:TYPES.MECH}, {n:"Flame Fox", s:"🦊", t:TYPES.FUEGO}, {n:"Aqua Fish", s:"🐟", t:TYPES.AGUA},
-        {n:"Thunder Bird", s:"🦅", t:TYPES.ELEC}, {n:"Vine Snake", s:"🐍", t:TYPES.PLANTA}, {n:"Ghost Shell", s:"👻", t:TYPES.DARK},
-        {n:"Iron Crab", s:"🦀", t:TYPES.MECH}, {n:"Magma Ant", s:"🐜", t:TYPES.FUEGO}, {n:"Deep Squid", s:"🦑", t:TYPES.AGUA}, {n:"Zap Cat", s:"🐱", t:TYPES.ELEC},
-        // PISO 3 (20-29) - Hydro
-        {n:"Mech Gorilla", s:"🦍", t:TYPES.MECH}, {n:"Solar Lion", s:"🦁", t:TYPES.FUEGO}, {n:"Tsunami Shark", s:"🦈", t:TYPES.AGUA},
-        {n:"Volt Bear", s:"🐻", t:TYPES.ELEC}, {n:"Forest Trex", s:"🦖", t:TYPES.PLANTA}, {n:"Shadow Owl", s:"🦉", t:TYPES.DARK},
-        {n:"Steel Rhino", s:"🦏", t:TYPES.MECH}, {n:"Lava Golem", s:"👺", t:TYPES.FUEGO}, {n:"Ice Whale", s:"🐋", t:TYPES.AGUA}, {n:"Storm Hawk", s:"🦅", t:TYPES.ELEC},
-        // PISO 4 (30-39) - Power Plant
-        {n:"Plasma Dragon", s:"🐉", t:TYPES.ELEC}, {n:"Inferno Drake", s:"🐲", t:TYPES.FUEGO}, {n:"Bio Titan", s:"🦕", t:TYPES.PLANTA},
-        {n:"Neon Tiger", s:"🐅", t:TYPES.ELEC}, {n:"Abyss Croc", s:"🐊", t:TYPES.AGUA}, {n:"Void Spirit", s:"👽", t:TYPES.DARK},
-        {n:"Mecha Zilla", s:"🦎", t:TYPES.MECH}, {n:"Scorpion K", s:"🦂", t:TYPES.DARK}, {n:"Spider Web", s:"🕷️", t:TYPES.MECH}, {n:"Uni Horn", s:"🦄", t:TYPES.PLANTA},
-        // PISO 5 (40-49) - The Core
-        {n:"OMEGA", s:"🧿", t:TYPES.MECH}, {n:"PHOENIX", s:"🦅", t:TYPES.FUEGO}, {n:"KRAKEN", s:"🐙", t:TYPES.AGUA},
-        {n:"ZEUS", s:"⚡", t:TYPES.ELEC}, {n:"GAIA", s:"🌳", t:TYPES.PLANTA}, {n:"HADES", s:"💀", t:TYPES.DARK},
-        {n:"CHRONOS", s:"⏳", t:TYPES.MECH}, {n:"COSMOS", s:"🌌", t:TYPES.DARK}, {n:"SOL", s:"☀️", t:TYPES.FUEGO}, {n:"LUNA", s:"🌙", t:TYPES.DARK}
+        {n:"Bit Bug", s:"🐞", t:TYPES.PLANTA, desc:"Pequeño bot recolector de datos. Suele habitar servidores antiguos."},
+        {n:"Wire Worm", s:"🐛", t:TYPES.MECH, desc:"Gusano de fibra óptica. Consume ancho de banda para crecer."},
+        {n:"Sparky", s:"⚡", t:TYPES.ELEC, desc:"Unidad de batería inestable. Genera estática peligrosa."},
+        {n:"Pebble", s:"🪨", t:TYPES.MECH, desc:"Fragmento de silicio endurecido. Muy resistente a impactos físicos."},
+        {n:"Drip", s:"💧", t:TYPES.AGUA, desc:"Nanobots en suspensión líquida. Puede reparar circuitos mojados."},
+        {n:"Ember", s:"🔥", t:TYPES.FUEGO, desc:"Programa de firewall agresivo. Quema malware al contacto."},
+        {n:"Leafy", s:"🍃", t:TYPES.PLANTA, desc:"Algoritmo de crecimiento procedural. Se adapta al entorno."},
+        {n:"Batty", s:"🦇", t:TYPES.DARK, desc:"Dron de vigilancia nocturna. Opera en la Dark Web."},
+        {n:"Rat-X", s:"🐀", t:TYPES.MECH, desc:"Scavenger común. Roba paquetes de datos perdidos."},
+        {n:"Slime", s:"🦠", t:TYPES.AGUA, desc:"Residuo lógico viscoso. Dificulta el procesamiento."},
+        
+        {n:"Cyber Wolf", s:"🐺", t:TYPES.MECH, desc:"Cazador autónomo. Rastrea firmas digitales a gran distancia."},
+        {n:"Flame Fox", s:"🦊", t:TYPES.FUEGO, desc:"Agente rápido y astuto. Deja rastros de código corrupto."},
+        {n:"Aqua Fish", s:"🐟", t:TYPES.AGUA, desc:"Navega por los flujos de datos submarinos del sistema."},
+        {n:"Thunder Bird", s:"🦅", t:TYPES.ELEC, desc:"Controlador aéreo de alto voltaje. Domina las nubes."},
+        {n:"Vine Snake", s:"🐍", t:TYPES.PLANTA, desc:"Código espagueti con vida propia. Atrapa a procesos lentos."},
+        {n:"Ghost Shell", s:"👻", t:TYPES.DARK, desc:"Kernel fantasma de un sistema operativo muerto."},
+        {n:"Iron Crab", s:"🦀", t:TYPES.MECH, desc:"Tanque móvil con tenazas hidráulicas industriales."},
+        {n:"Magma Ant", s:"🐜", t:TYPES.FUEGO, desc:"Trabajadora incansable de núcleos sobrecalentados."},
+        {n:"Deep Squid", s:"🦑", t:TYPES.AGUA, desc:"Opera en las profundidades del almacenamiento frío."},
+        {n:"Zap Cat", s:"🐱", t:TYPES.ELEC, desc:"Mascota virtual sobrecargada. Adorable pero letal."},
+
+        {n:"Mech Gorilla", s:"🦍", t:TYPES.MECH, desc:"Fuerza bruta computacional. Aplasta firewalls."},
+        {n:"Solar Lion", s:"🦁", t:TYPES.FUEGO, desc:"Alimentado por paneles solares orbitales. Rey del sector."},
+        {n:"Tsunami Shark", s:"🦈", t:TYPES.AGUA, desc:"Depredador alfa de los lagos de datos."},
+        {n:"Volt Bear", s:"🐻", t:TYPES.ELEC, desc:"Generador masivo con garras. Hiberna en modo ahorro."},
+        {n:"Forest Trex", s:"🦖", t:TYPES.PLANTA, desc:"Gigante prehistórico restaurado digitalmente."},
+        {n:"Shadow Owl", s:"🦉", t:TYPES.DARK, desc:"Observador silencioso. Ataca desde el código oculto."},
+        {n:"Steel Rhino", s:"🦏", t:TYPES.MECH, desc:"Blindaje de grado militar. Imparable en carga."},
+        {n:"Lava Golem", s:"👺", t:TYPES.FUEGO, desc:"Entidad nacida de un error crítico de temperatura."},
+        {n:"Ice Whale", s:"🐋", t:TYPES.AGUA, desc:"Servidor masivo de almacenamiento. Lento pero inmenso."},
+        {n:"Storm Hawk", s:"🦅", t:TYPES.ELEC, desc:"Ave de tormenta. Controla el clima del servidor."},
+
+        {n:"Plasma Dragon", s:"🐉", t:TYPES.ELEC, desc:"Leyenda del código. Respira plasma ionizado."},
+        {n:"Inferno Drake", s:"🐲", t:TYPES.FUEGO, desc:"Guardián de los sectores prohibidos."},
+        {n:"Bio Titan", s:"🦕", t:TYPES.PLANTA, desc:"Experimento de bio-ingeniería fuera de control."},
+        {n:"Neon Tiger", s:"🐅", t:TYPES.ELEC, desc:"Depredador de neón. Sus rayas son láseres activos."},
+        {n:"Abyss Croc", s:"🐊", t:TYPES.AGUA, desc:"Acecha en la papelera de reciclaje."},
+        {n:"Void Spirit", s:"👽", t:TYPES.DARK, desc:"Entidad del vacío. No debería existir."},
+        {n:"Mecha Zilla", s:"🦎", t:TYPES.MECH, desc:"La destrucción final. Kaiju mecánico."},
+        {n:"Scorpion K", s:"🦂", t:TYPES.DARK, desc:"Inyector de virus letal. Mortal en segundos."},
+        {n:"Spider Web", s:"🕷️", t:TYPES.MECH, desc:"Tejedora de la web. Controla las conexiones."},
+        {n:"Uni Horn", s:"🦄", t:TYPES.PLANTA, desc:"Mito digital. Purifica datos corruptos."},
+
+        {n:"OMEGA", s:"🧿", t:TYPES.MECH, desc:"El fin de todo proceso."},
+        {n:"PHOENIX", s:"🦅", t:TYPES.FUEGO, desc:"Renace de los backups eliminados."},
+        {n:"KRAKEN", s:"🐙", t:TYPES.AGUA, desc:"Devorador de navíos de datos."},
+        {n:"ZEUS", s:"⚡", t:TYPES.ELEC, desc:"Administrador supremo del sistema."},
+        {n:"GAIA", s:"🌳", t:TYPES.PLANTA, desc:"La raíz del directorio."},
+        {n:"HADES", s:"💀", t:TYPES.DARK, desc:"Gestor de la papelera final."},
+        {n:"CHRONOS", s:"⏳", t:TYPES.MECH, desc:"Controlador del reloj del sistema."},
+        {n:"COSMOS", s:"🌌", t:TYPES.DARK, desc:"La inmensidad de la nube."},
+        {n:"SOL", s:"☀️", t:TYPES.FUEGO, desc:"Fuente de energía infinita."},
+        {n:"LUNA", s:"🌙", t:TYPES.DARK, desc:"El lado oscuro de la red."}
     ];
 
-    const MOVES = {
-        'Golpe': {p:40, pp:35, t:'normal'}, 'Rayo': {p:60, pp:20, t:TYPES.ELEC}, 'Fuego': {p:60, pp:20, t:TYPES.FUEGO}, 
-        'Agua': {p:60, pp:20, t:TYPES.AGUA}, 'Hoja': {p:60, pp:20, t:TYPES.PLANTA}, 'Metal': {p:70, pp:15, t:TYPES.MECH},
-        'Oscuro': {p:70, pp:15, t:TYPES.DARK}, 'Ultimate': {p:120, pp:5, t:'normal'}
+    const MOVES_POOL = {
+        'Placaje': {p:40, pp:35, t:'normal'},
+        'Arañazo': {p:40, pp:35, t:'normal'},
+        'Ascuas': {p:40, pp:25, t:TYPES.FUEGO, eff:'burn'},
+        'Burbuja': {p:40, pp:25, t:TYPES.AGUA, eff:'heal'}, 
+        'Látigo Cepa': {p:45, pp:25, t:TYPES.PLANTA},
+        'Impactrueno': {p:40, pp:25, t:TYPES.ELEC},
+        'Mordisco': {p:60, pp:20, t:TYPES.DARK},
+        'Garra Metal': {p:50, pp:30, t:TYPES.MECH},
+        'Lanzallamas': {p:90, pp:15, t:TYPES.FUEGO, eff:'burn'},
+        'Hidrobomba': {p:110, pp:5, t:TYPES.AGUA},
+        'Rayo Solar': {p:120, pp:10, t:TYPES.PLANTA},
+        'Trueno': {p:110, pp:10, t:TYPES.ELEC},
+        'Tóxico': {p:20, pp:10, t:TYPES.DARK, eff:'psn'},
+        'Recuperación': {p:0, pp:10, t:'normal', eff:'rec'},
+        'Hiperrayo': {p:150, pp:5, t:'normal'},
+        'Terremoto': {p:100, pp:10, t:TYPES.MECH}
     };
 
     const ITEMS = {
@@ -400,36 +450,23 @@
 
     /* === ESTADO DEL JUEGO === */
     let game = {
-        playerName: "Engineer",
-        credits: 800,
-        floor: 1, team: [], active: 0, pokedex: [],
+        playerName: "Engineer", credits: 800, floor: 1, maxFloor: 1,
+        team: [], active: 0, pokedex: [],
         inv: { ball:5, ultra:0, pot:3, maxpot:1, revive:0, chip:0 },
-        playerX: 6, playerY: 6, mapData: [],
-        progress: 0, enemy: null, turn: true
+        playerX: 6, playerY: 6, mapData: [], progress: 0, enemy: null, turn: true
     };
-
     let selectedStarterId = null;
 
-    /* === INTRO ANIMATION === */
-    const STORY_TEXT = "INICIANDO SISTEMA...\n\n> AÑO: 2140\n> UBICACIÓN: SECTOR CERO\n> ESTADO: CRÍTICO\n\nINFORME:\nEl núcleo de la IA Global ha sido corrompido.\nLas máquinas se han vuelto hostiles.\n\nTU MISIÓN:\nReiniciar el servidor central.\n\nCARGANDO INTERFAZ DE USUARIO...";
-
+    /* === SETUP === */
+    const STORY_TEXT = "INICIANDO SISTEMA v27.0...\n\n> TOPOGRAFÍA: CLÁSICA (GRID)\n> MÓDULOS DE EVOLUCIÓN: ACTIVOS\n> AUDITORÍA DE PISOS: HABILITADA\n\nBIENVENIDO INGENIERO.";
+    
     let charIndex = 0;
     function typeWriter() {
-        if (charIndex < STORY_TEXT.length) {
-            document.getElementById("story-display").innerHTML += STORY_TEXT.charAt(charIndex);
-            charIndex++;
-            setTimeout(typeWriter, 30);
-        } else {
-            setTimeout(() => {
-                document.getElementById('intro-form').classList.add('visible');
-            }, 500);
-        }
+        if (charIndex < STORY_TEXT.length) { document.getElementById("story-display").innerHTML += STORY_TEXT.charAt(charIndex); charIndex++; setTimeout(typeWriter, 30); }
+        else setTimeout(() => { document.getElementById('intro-form').classList.add('visible'); }, 500);
     }
-    window.onload = () => {
-        setTimeout(typeWriter, 500);
-    };
+    window.onload = () => { setTimeout(typeWriter, 500); };
 
-    /* === SETUP === */
     window.addEventListener('keydown', (e) => {
         const isMap = document.getElementById('view-map').classList.contains('active');
         const noModal = document.querySelector('.modal[style*="flex"]') === null;
@@ -446,17 +483,15 @@
     function selectStarter(id) {
         selectedStarterId = id;
         document.querySelectorAll('.starter-card').forEach(c => c.classList.remove('selected'));
-        const cards = document.querySelectorAll('.starter-card');
-        if(id===2) cards[0].classList.add('selected');
-        if(id===5) cards[1].classList.add('selected');
-        if(id===4) cards[2].classList.add('selected');
+        if(id===2) document.querySelectorAll('.starter-card')[0].classList.add('selected');
+        if(id===5) document.querySelectorAll('.starter-card')[1].classList.add('selected');
+        if(id===4) document.querySelectorAll('.starter-card')[2].classList.add('selected');
     }
 
     function confirmStart() {
         const nameInput = document.getElementById('player-name-input').value.trim();
         if(nameInput.length > 0) game.playerName = nameInput;
         if(selectedStarterId === null) return alert("¡SELECCIONA UNA UNIDAD!");
-
         document.getElementById('intro-screen').style.display = 'none';
         startGame(selectedStarterId);
     }
@@ -465,9 +500,7 @@
         document.getElementById('ui-player-name').innerText = game.playerName.toUpperCase();
         game.team.push(createMon(starterId, 5));
         game.pokedex.push(starterId);
-        generateMap();
-        renderMapUI();
-        switchView('map');
+        generateMap(); renderMap(); switchView('map');
     }
 
     function switchView(v) {
@@ -476,68 +509,25 @@
         if(v==='map') renderMap();
     }
 
-    /* === ANIMACION ENCUENTRO === */
-    function triggerEncounterAnim(callback) {
-        const l = document.getElementById('transition-layer');
-        l.classList.remove('anim-flash');
-        void l.offsetWidth; // trigger reflow
-        l.classList.add('anim-flash');
-        setTimeout(() => {
-            callback();
-        }, 250); 
+    /* === MAPA & NAVEGACION === */
+    function changeFloor(dir) {
+        const target = game.floor + dir;
+        if(target < 1) return;
+        if(target > game.maxFloor) return alert("Piso bloqueado. Elimina al Jefe del sector actual.");
+        game.floor = target;
+        generateMap(); renderMap();
     }
 
-    /* === GESTION DE TEMAS POR PISO === */
-    function applyFloorTheme() {
-        const r = document.documentElement.style;
-        const f = game.floor;
-        // PISO 1: Default (Tech)
-        if(f===1) {
-            r.setProperty('--map-wall', '#222');
-            r.setProperty('--map-floor', '#050505');
-            r.setProperty('--map-accent', '#00f3ff');
-        }
-        // PISO 2: Volcanic
-        else if(f===2) {
-            r.setProperty('--map-wall', '#310');
-            r.setProperty('--map-floor', '#100');
-            r.setProperty('--map-accent', '#ff4400');
-        }
-        // PISO 3: Hydro
-        else if(f===3) {
-            r.setProperty('--map-wall', '#002');
-            r.setProperty('--map-floor', '#001');
-            r.setProperty('--map-accent', '#0088ff');
-        }
-        // PISO 4: Power Plant
-        else if(f===4) {
-            r.setProperty('--map-wall', '#330');
-            r.setProperty('--map-floor', '#110');
-            r.setProperty('--map-accent', '#ffdd00');
-        }
-        // PISO 5: Core
-        else {
-            r.setProperty('--map-wall', '#202');
-            r.setProperty('--map-floor', '#000');
-            r.setProperty('--map-accent', '#bd00ff');
-        }
-    }
-
-    /* === MAPA === */
     function generateMap() {
-        game.mapData = [];
-        game.progress = 0; 
-        applyFloorTheme(); // Aplicar tema
-
+        game.mapData = []; game.progress = 0;
         document.getElementById('map-container').style.gridTemplateColumns = `repeat(${MAP_SIZE}, 1fr)`;
         document.getElementById('map-container').style.gridTemplateRows = `repeat(${MAP_SIZE}, 1fr)`;
-
         for(let y=0; y<MAP_SIZE; y++) {
             let row = [];
             for(let x=0; x<MAP_SIZE; x++) {
                 if(x===0||x===MAP_SIZE-1||y===0||y===MAP_SIZE-1) row.push(1); 
                 else if(Math.random()<0.1) row.push(1); 
-                else if(Math.random()<0.3) row.push(2); 
+                else if(Math.random()<0.3) row.push(2); // Grass
                 else row.push(0);
             }
             game.mapData.push(row);
@@ -559,6 +549,7 @@
                 else if(t===3) { d.classList.add('tile-boss'); d.innerHTML='⚠️'; }
                 else if(t===4) { d.classList.add('tile-lock'); d.innerHTML='🔒'; } 
                 else d.classList.add('tile-floor');
+                
                 if(x===game.playerX && y===game.playerY) d.innerHTML = '<div class="entity-player">🧑‍🚀</div>';
                 c.appendChild(d);
             }
@@ -576,39 +567,41 @@
         const nx = game.playerX + dx, ny = game.playerY + dy;
         const t = game.mapData[ny][nx];
         if(t===1) return; 
-
         game.playerX = nx; game.playerY = ny;
         renderMap();
-
-        if(t===3) {
-            triggerEncounterAnim(() => initBattle(true));
-        } else if(t===2 && Math.random()<0.3) {
-            triggerEncounterAnim(() => initBattle(false));
-        }
+        if(t===3) triggerEncounterAnim(()=>initBattle(true));
+        else if(t===2 && Math.random()<0.3) triggerEncounterAnim(()=>initBattle(false));
+    }
+    
+    function triggerEncounterAnim(cb) {
+        const l = document.getElementById('transition-layer');
+        l.classList.remove('anim-flash'); void l.offsetWidth; l.classList.add('anim-flash');
+        setTimeout(cb, 250);
     }
 
-    /* === BATALLA === */
+    /* === CREACIÓN MON === */
     function createMon(id, lvl) {
         const d = RAW_DB[id];
         const hp = Math.floor(60 + lvl*12);
-        let mvs = ['Golpe'];
-        if(d.t===TYPES.FUEGO) mvs.push('Fuego');
-        if(d.t===TYPES.AGUA) mvs.push('Agua');
-        if(d.t===TYPES.ELEC) mvs.push('Rayo');
-        if(d.t===TYPES.MECH) mvs.push('Metal');
-        if(d.t===TYPES.PLANTA) mvs.push('Hoja');
-        if(d.t===TYPES.DARK) mvs.push('Oscuro');
-        if(lvl>20) mvs.push('Ultimate');
+        let mvs = [{n:'Placaje', ...MOVES_POOL['Placaje'], pp:35, maxPP:35}];
         
-        let finalMoves = mvs.map(k=>({n:k, ...MOVES[k], maxPP:MOVES[k].pp, pp:MOVES[k].pp}));
-        
-        // SHINY RATE UP: AHORA ES 0.2 (20%)
-        return { 
-            id:id, ...d, lvl:lvl, maxHp:hp, hp:hp, xp:0, xpMax:lvl*50, 
-            moves:finalMoves, shiny: Math.random()<0.20
-        };
+        if(d.t===TYPES.FUEGO) mvs.push({n:'Ascuas', ...MOVES_POOL['Ascuas'], pp:25, maxPP:25});
+        if(d.t===TYPES.AGUA) mvs.push({n:'Burbuja', ...MOVES_POOL['Burbuja'], pp:25, maxPP:25});
+        if(d.t===TYPES.ELEC) mvs.push({n:'Impactrueno', ...MOVES_POOL['Impactrueno'], pp:25, maxPP:25});
+        if(d.t===TYPES.MECH) mvs.push({n:'Garra Metal', ...MOVES_POOL['Garra Metal'], pp:25, maxPP:25});
+        if(d.t===TYPES.PLANTA) mvs.push({n:'Látigo Cepa', ...MOVES_POOL['Látigo Cepa'], pp:25, maxPP:25});
+        if(d.t===TYPES.DARK) mvs.push({n:'Mordisco', ...MOVES_POOL['Mordisco'], pp:20, maxPP:20});
+
+        if(lvl >= 15) {
+             if(d.t===TYPES.FUEGO) mvs.push({n:'Lanzallamas', ...MOVES_POOL['Lanzallamas'], pp:15, maxPP:15});
+             else if(d.t===TYPES.AGUA) mvs.push({n:'Hidrobomba', ...MOVES_POOL['Hidrobomba'], pp:5, maxPP:5});
+             else if(d.t===TYPES.ELEC) mvs.push({n:'Trueno', ...MOVES_POOL['Trueno'], pp:10, maxPP:10});
+             else mvs.push({n:'Tóxico', ...MOVES_POOL['Tóxico'], pp:10, maxPP:10});
+        }
+        return { id:id, ...d, lvl:lvl, maxHp:hp, hp:hp, xp:0, xpMax:lvl*50, moves:mvs, shiny: Math.random()<0.20, status: null };
     }
 
+    /* === BATALLA === */
     function initBattle(isBoss) {
         game.turn = true;
         let id, lvl;
@@ -619,17 +612,15 @@
             game.enemy.maxHp *= 2; game.enemy.hp = game.enemy.maxHp;
             game.enemy.boss = true;
         } else {
-            // RANGO DINAMICO POR PISO (Piso 1: 0-8, Piso 2: 10-18, etc)
             const minId = (game.floor-1)*10;
             const maxId = minId + 8; 
             id = Math.floor(Math.random()*(maxId-minId+1)) + minId;
             if(id >= RAW_DB.length) id = RAW_DB.length-1;
-            
             lvl = Math.max(1, (game.floor-1)*10 + Math.floor(Math.random()*8));
             game.enemy = createMon(id, lvl);
         }
         switchView('battle');
-        log(`ENEMIGO DETECTADO: ${game.enemy.n}`);
+        log(`ENEMIGO: ${game.enemy.n}`);
         updateBattleUI();
     }
 
@@ -637,74 +628,100 @@
         if(!game.turn) return;
         const p = game.team[game.active];
         const m = p.moves[i];
-        if(m.pp<=0) return alert("Sin Energía (PP)");
+        if(m.pp<=0) return alert("Sin PP");
         
         m.pp--;
-        document.getElementById('p-sprite').parentElement.classList.add('attack-anim');
-        setTimeout(()=>document.getElementById('p-sprite').parentElement.classList.remove('attack-anim'),300);
+        const sprite = document.getElementById('p-sprite');
+        sprite.parentElement.classList.add('attack-anim');
+        setTimeout(()=>sprite.parentElement.classList.remove('attack-anim'),300);
 
-        const dmg = Math.floor((p.lvl*0.5 + m.p/2) * (Math.random()*0.4 + 0.8));
-        game.enemy.hp -= dmg;
-        log(`${p.n} usa ${m.n}! Daño: ${dmg}`);
+        let dmg = Math.floor((p.lvl*0.5 + m.p/2) * (Math.random()*0.4 + 0.8));
+        
+        if(m.eff === 'heal') {
+            log(`${p.n} repara sus circuitos!`);
+            p.hp += 30; if(p.hp > p.maxHp) p.hp = p.maxHp;
+            if(m.p > 0) { game.enemy.hp -= dmg; log(`Impacto: ${dmg}`); }
+        } else if(m.eff === 'rec') {
+             p.hp += Math.floor(p.maxHp * 0.5); if(p.hp > p.maxHp) p.hp = p.maxHp;
+             log(`${p.n} recupera salud.`);
+        } else {
+            game.enemy.hp -= dmg;
+            log(`${p.n} usa ${m.n}! Daño: ${dmg}`);
+            if(m.eff === 'burn' && Math.random() < 0.3) { game.enemy.status = 'burn'; log("¡Enemigo QUEMADO!"); }
+            if(m.eff === 'psn' && Math.random() < 0.5) { game.enemy.status = 'psn'; log("¡Enemigo ENVENENADO!"); }
+        }
 
         updateBattleUI();
+        if(game.enemy.hp<=0) { game.enemy.hp=0; setTimeout(winBattle, 1000); }
+        else { game.turn = false; setTimeout(processTurnEnd, 1000); }
+    }
 
-        if(game.enemy.hp<=0) {
-            game.enemy.hp=0;
-            setTimeout(winBattle, 1000);
-        } else {
-            game.turn = false;
-            setTimeout(enemyAttack, 1000);
+    function processTurnEnd() {
+        const p = game.team[game.active];
+        if(p.status === 'burn' || p.status === 'psn') {
+            let dot = Math.floor(p.maxHp * 0.06); p.hp -= dot; log(`${p.n} sufre daño residual.`);
         }
+        const e = game.enemy;
+        if(e.hp > 0 && (e.status === 'burn' || e.status === 'psn')) {
+            let dot = Math.floor(e.maxHp * 0.06); e.hp -= dot; log(`${e.n} sufre daño residual.`);
+        }
+        updateBattleUI();
+
+        if(p.hp <= 0) handleFaint();
+        else if (e.hp <= 0) winBattle();
+        else enemyAttack();
     }
 
     function enemyAttack() {
         const e = game.enemy;
         const p = game.team[game.active];
-        const dmg = Math.floor((e.lvl*0.5 + 20) * (Math.random()*0.4 + 0.8));
+        const rndMove = e.moves[Math.floor(Math.random()*e.moves.length)];
+        const dmg = Math.floor((e.lvl*0.5 + rndMove.p/2) * (Math.random()*0.4 + 0.8));
         
-        document.getElementById('e-sprite').parentElement.classList.add('attack-anim');
-        setTimeout(()=>document.getElementById('e-sprite').parentElement.classList.remove('attack-anim'),300);
+        const sprite = document.getElementById('e-sprite');
+        sprite.parentElement.classList.add('attack-anim');
+        setTimeout(()=>sprite.parentElement.classList.remove('attack-anim'),300);
 
         p.hp -= dmg;
-        log(`${e.n} ataca! Daño: ${dmg}`);
+        log(`${e.n} usa ${rndMove.n}! Daño: ${dmg}`);
+        if(rndMove.eff === 'burn' && Math.random() < 0.2) { p.status = 'burn'; log("¡Te han QUEMADO!"); }
+        if(rndMove.eff === 'psn' && Math.random() < 0.2) { p.status = 'psn'; log("¡Te han ENVENENADO!"); }
 
-        if(p.hp<=0) {
-            p.hp=0;
-            log("¡SISTEMA ABATIDO!");
-            if(game.team.some(m=>m.hp>0)) openTeam();
-            else {
-                alert("FALLO DE MISIÓN. REINICIANDO PROTOCOLO...");
-                game.team.forEach(m=>m.hp=m.maxHp);
-                game.playerX=Math.floor(MAP_SIZE/2); game.playerY=game.playerX;
-                switchView('map');
-            }
-        }
-        game.turn = true;
         updateBattleUI();
+        if(p.hp<=0) handleFaint();
+        else game.turn = true;
+    }
+
+    function handleFaint() {
+        const p = game.team[game.active]; p.hp=0; log("¡SISTEMA ABATIDO!");
+        if(game.team.some(m=>m.hp>0)) openTeam();
+        else {
+            alert("FALLO CRÍTICO. REINICIANDO...");
+            game.team.forEach(m=> { m.hp=m.maxHp; m.status=null; });
+            game.playerX=Math.floor(MAP_SIZE/2); game.playerY=game.playerX;
+            switchView('map');
+        }
     }
 
     function winBattle() {
         const reward = game.enemy.lvl * 60;
         game.credits += reward;
         const p = game.team[game.active];
-        const earnedXP = game.enemy.lvl * 25; 
+        const earnedXP = game.enemy.lvl * 30; 
         gainXp(p, earnedXP);
 
         if(game.enemy.boss) {
-            alert(`¡SECTOR ${game.floor} PURGADO! \n\nINICIANDO ASCENSO AL PISO ${game.floor + 1}...`);
-            game.floor++;
-            if(game.floor > 5) { alert("¡NÚCLEO REINICIADO! ¡MISIÓN CUMPLIDA!"); game.floor=1; location.reload(); return; }
-            generateMap(); // Genera mapa con nuevo tema y nuevos pokes
+            alert(`SECTOR ${game.floor} PURGADO.`);
+            if(game.floor === game.maxFloor) game.maxFloor++;
+            if(game.floor < 5) { game.floor++; generateMap(); }
+            else { alert("¡PROYECTO TERMINADO! DOMINIO TOTAL."); game.floor=1; location.reload(); return; }
         } else {
             game.progress++;
             game.mapData[game.playerY][game.playerX] = 0; 
             if(game.progress === ENCOUNTERS_TO_BOSS) {
                 let bx, by;
-                do { bx=Math.floor(Math.random()*MAP_SIZE); by=Math.floor(Math.random()*MAP_SIZE); }
-                while(game.mapData[by][bx] === 1);
-                game.mapData[by][bx] = 3;
-                alert("¡SEÑAL DE JEFE DETECTADA!");
+                do { bx=Math.floor(Math.random()*MAP_SIZE); by=Math.floor(Math.random()*MAP_SIZE); } while(game.mapData[by][bx] === 1);
+                game.mapData[by][bx] = 3; alert("¡SEÑAL DE JEFE DETECTADA!");
             }
         }
         setTimeout(()=>switchView('map'), 1500);
@@ -712,77 +729,88 @@
 
     function gainXp(mon, amount) {
         mon.xp += amount;
-        log(`${mon.n} obtuvo ${amount} XP.`);
+        log(`${mon.n} +${amount} XP.`);
         if(mon.xp >= mon.xpMax) {
             mon.lvl++; mon.xp=0; mon.maxHp+=15; mon.hp=mon.maxHp; mon.xpMax=mon.lvl*50;
             log(`¡SUBIDA DE NIVEL: ${mon.lvl}!`);
+            checkLearnMove(mon); checkEvolution(mon);
         }
         updateBattleUI();
     }
 
-    function runAway() {
-        if(game.enemy.boss) return log("¡ERROR! Retirada bloqueada.");
-        if(Math.random()>0.4) {
-            log("Retirada táctica exitosa.");
-            setTimeout(()=>switchView('map'),500);
-        } else {
-            log("Fallo al retirar.");
-            setTimeout(enemyAttack,500);
+    function checkLearnMove(mon) {
+        let newMove = null;
+        if(mon.lvl === 10) newMove = 'Mordisco';
+        else if(mon.lvl === 15) {
+             if(mon.t === TYPES.FUEGO) newMove = 'Lanzallamas';
+             else if(mon.t === TYPES.AGUA) newMove = 'Hidrobomba';
+             else if(mon.t === TYPES.ELEC) newMove = 'Trueno';
+             else newMove = 'Tóxico';
+        }
+        else if(mon.lvl === 25) newMove = 'Hiperrayo';
+
+        if(newMove && MOVES_POOL[newMove]) {
+            if(mon.moves.length >= 4) mon.moves.shift();
+            mon.moves.push({n:newMove, ...MOVES_POOL[newMove], maxPP:MOVES_POOL[newMove].pp});
+            alert(`¡${mon.n} aprendió ${newMove}!`);
         }
     }
 
+    function checkEvolution(mon) {
+        if(mon.lvl === 10 || mon.lvl === 20) {
+            mon.n += (mon.lvl===10 ? " MK-II" : " MK-III");
+            mon.maxHp += 50; mon.hp = mon.maxHp;
+            if(game.team[game.active] === mon) {
+                const s = document.getElementById('p-sprite');
+                s.parentElement.classList.add('evo-active');
+                setTimeout(()=>s.parentElement.classList.remove('evo-active'), 2000);
+            }
+            alert(`¡EVOLUCIÓN!\n${mon.n} ha mejorado.`);
+        }
+    }
+
+    /* === UI & MENUS === */
     function updateBattleUI() {
-        const p = game.team[game.active];
-        if (!p) return;
+        const p = game.team[game.active]; if (!p) return;
         const e = game.enemy;
-        
         document.getElementById('p-name').innerText = p.n;
         document.getElementById('p-lvl').innerText = "Nv."+p.lvl;
         document.getElementById('p-sprite').innerText = p.s;
         
-        let php = (p.hp/p.maxHp)*100;
-        document.getElementById('p-hp').style.width = php+"%";
+        document.getElementById('p-hp').style.width = ((p.hp/p.maxHp)*100)+"%";
         document.getElementById('p-hp-txt').innerText = `${p.hp}/${p.maxHp}`;
         
-        let pxp = (p.xp / p.xpMax) * 100;
-        document.getElementById('p-xp').style.width = pxp+"%";
+        const ps = document.getElementById('p-status');
+        if(p.status) { ps.style.display='block'; ps.innerText=p.status.toUpperCase(); ps.className='status-badge ' + (p.status==='burn'?'status-burn':'status-psn'); }
+        else ps.style.display='none';
+
+        document.getElementById('p-xp').style.width = ((p.xp/p.xpMax)*100)+"%";
 
         if(e) {
             document.getElementById('e-name').innerText = e.n;
             document.getElementById('e-lvl').innerText = "Nv."+e.lvl;
             document.getElementById('e-sprite').innerText = e.s;
             document.getElementById('e-hp').style.width = ((e.hp/e.maxHp)*100)+"%";
+            const es = document.getElementById('e-status');
+            if(e.status) { es.style.display='block'; es.innerText=e.status.toUpperCase(); es.className='status-badge ' + (e.status==='burn'?'status-burn':'status-psn'); }
+            else es.style.display='none';
         }
 
         const mg = document.getElementById('combat-menu'); mg.innerHTML='';
         p.moves.forEach((m,i)=>{
             const color = TYPE_COLORS[m.t] || TYPE_COLORS['normal'];
-            mg.innerHTML += `
-            <button class="atk-btn" onclick="attack(${i})" 
-                style="background:${color}; border-color:rgba(255,255,255,0.5);">
-                ${m.n}
-                <small>PP:${m.pp}/${m.maxPP}</small>
-            </button>`;
+            mg.innerHTML += `<button class="atk-btn" onclick="attack(${i})" style="background:${color}; border-color:rgba(255,255,255,0.5);">${m.n}<small>${m.pp}/${m.maxPP}</small></button>`;
         });
     }
 
-    function log(t) {
-        const c = document.getElementById('console');
-        c.innerHTML = `<div class="log-entry">> ${t}</div>` + c.innerHTML;
-    }
+    function log(t) { const c = document.getElementById('console'); c.innerHTML = `<div class="log-entry">> ${t}</div>` + c.innerHTML; }
 
-    /* === MENUS Y MODALS === */
     function openBag() {
         const l = document.getElementById('bag-list'); l.innerHTML='';
         for(let k in game.inv) {
             if(game.inv[k]>0) {
                 const it = ITEMS[k];
-                l.innerHTML += `
-                <div class="card">
-                    <div class="card-icon">${it.icon}</div>
-                    <div>${it.n}</div><small>x${game.inv[k]}</small><br>
-                    <button class="ui-btn" style="margin-top:5px; width:100%" onclick="useItem('${k}')">USAR</button>
-                </div>`;
+                l.innerHTML += `<div class="card"><div class="card-icon">${it.icon}</div><div>${it.n}</div><small>x${game.inv[k]}</small><br><button class="ui-btn" style="margin-top:5px; width:100%" onclick="useItem('${k}')">USAR</button></div>`;
             }
         }
         document.getElementById('modal-bag').style.display='flex';
@@ -792,31 +820,18 @@
         const inBattle = document.getElementById('view-battle').classList.contains('active');
         if(k.includes('ball')) {
             if(!inBattle) return alert("Solo combate");
-
-            if(game.enemy.boss) {
-                if(k !== 'ultra') return alert("ERROR: Blindaje de JEFE activo. Requiere Master Ball (Morada).");
-            }
-            
-            game.inv[k]--;
-            closeModal('modal-bag');
-            log("Ejecutando captura...");
+            if(game.enemy.boss && k !== 'ultra') return alert("Requiere Master Ball.");
+            game.inv[k]--; closeModal('modal-bag'); log("Lanzando...");
             setTimeout(()=>{
                 const rate = ITEMS[k].rate * 0.3 + (1 - game.enemy.hp/game.enemy.maxHp);
                 if(Math.random() < rate) {
-                    game.enemy.hp = game.enemy.maxHp; 
+                    game.enemy.hp = game.enemy.maxHp; game.enemy.status=null;
                     game.team.push(game.enemy);
                     if(!game.pokedex.includes(game.enemy.id)) game.pokedex.push(game.enemy.id);
-                    log("¡Unidad asimilada exitosamente!");
-                    setTimeout(()=>winBattle(),1000);
-                } else {
-                    log("Fallo de asimilación.");
-                    setTimeout(enemyAttack, 1000);
-                }
+                    log("¡Capturado!"); setTimeout(()=>winBattle(),1000);
+                } else { log("Falló."); setTimeout(processTurnEnd, 1000); }
             }, 1000);
-        } else if(ITEMS[k].heal || k==='revive' || ITEMS[k].xp) {
-            closeModal('modal-bag');
-            openTeam(false, true, k);
-        }
+        } else if(ITEMS[k].heal || k==='revive' || ITEMS[k].xp) { closeModal('modal-bag'); openTeam(false, true, k); }
     }
 
     let pendingItem = null;
@@ -827,60 +842,27 @@
             let btn = '';
             if(itemMode) btn = `<button class="ui-btn" onclick="applyItem(${i})">USAR</button>`;
             else if(i!==game.active && m.hp>0) btn = `<button class="ui-btn" onclick="swapMon(${i})">CAMBIAR</button>`;
-            l.innerHTML += `
-            <div style="background:#111; border:1px solid #333; padding:10px; display:flex; align-items:center; gap:10px;">
+            l.innerHTML += `<div style="background:#111; border:1px solid #333; padding:10px; display:flex; align-items:center; gap:10px;">
                 <div style="font-size:30px;">${m.s}</div>
-                <div style="flex-grow:1;">
-                    <div style="font-weight:bold; color:${i===game.active?'var(--neon-green)':'#fff'}">${m.n} Nv.${m.lvl}</div>
-                    <div style="font-size:10px; color:#aaa;">HP: ${m.hp}/${m.maxHp}</div>
-                </div>
-                <div>${btn}</div>
-            </div>`;
+                <div style="flex-grow:1;"><div style="font-weight:bold; color:${i===game.active?'var(--neon-green)':'#fff'}">${m.n} Nv.${m.lvl}</div><div style="font-size:10px; color:#aaa;">HP: ${m.hp}/${m.maxHp} ${m.status?'['+m.status+']':''}</div></div>
+                <div>${btn}</div></div>`;
         });
         document.getElementById('modal-team').style.display='flex';
     }
 
     function applyItem(idx) {
-        const m = game.team[idx];
-        const it = ITEMS[pendingItem];
-        let used = false;
-
-        if(pendingItem==='pot' || pendingItem==='maxpot') {
-            if(m.hp < m.maxHp) {
-                m.hp += it.heal;
-                if(m.hp > m.maxHp) m.hp = m.maxHp;
-                used = true;
-            } else alert("HP al máximo");
-        }
-        else if(pendingItem==='revive') {
-            if(m.hp <= 0) { m.hp = Math.floor(m.maxHp/2); used=true; }
-            else alert("Unidad operativa");
-        }
-        else if(it.xp) {
-            gainXp(m, it.xp);
-            used = true;
-            alert("Chip instalado. Rendimiento aumentado.");
-        }
-
-        if(used) {
-            game.inv[pendingItem]--;
-            closeModal('modal-team');
-            const inBattle = document.getElementById('view-battle').classList.contains('active');
-            if(inBattle) { updateBattleUI(); if(game.turn) setTimeout(enemyAttack, 500); }
-            else openTeam();
-        }
+        const m = game.team[idx]; const it = ITEMS[pendingItem]; let used = false;
+        if(pendingItem==='pot' || pendingItem==='maxpot') { if(m.hp<m.maxHp){ m.hp+=it.heal; if(m.hp>m.maxHp)m.hp=m.maxHp; used=true;} else alert("Full HP"); }
+        else if(pendingItem==='revive') { if(m.hp<=0){ m.hp=Math.floor(m.maxHp/2); used=true;} else alert("Vivo"); }
+        else if(it.xp) { gainXp(m, it.xp); used=true; alert("XP Up"); }
+        
+        if(used) { game.inv[pendingItem]--; closeModal('modal-team'); const inBattle = document.getElementById('view-battle').classList.contains('active'); if(inBattle){ updateBattleUI(); if(game.turn) setTimeout(processTurnEnd, 500); } else openTeam(); }
     }
 
     function swapMon(idx) {
-        game.active = idx;
-        closeModal('modal-team');
+        game.active = idx; closeModal('modal-team');
         const inBattle = document.getElementById('view-battle').classList.contains('active');
-        if(inBattle) {
-            updateBattleUI();
-            log(`Activando: ${game.team[idx].n}`);
-            game.turn = false;
-            setTimeout(enemyAttack, 1000);
-        }
+        if(inBattle) { updateBattleUI(); log(`¡Ve ${game.team[idx].n}!`); game.turn = false; setTimeout(processTurnEnd, 1000); }
     }
 
     function openShop() {
@@ -888,41 +870,41 @@
         const l = document.getElementById('shop-list'); l.innerHTML='';
         for(let k in ITEMS) {
             const it = ITEMS[k];
-            l.innerHTML += `
-            <div class="card">
-                <div class="card-icon">${it.icon}</div>
-                <div>${it.n}</div><div style="color:gold">${it.price}CR</div>
-                <button class="ui-btn" style="margin-top:5px; width:100%" onclick="buy('${k}')">COMPRAR</button>
-            </div>`;
+            l.innerHTML += `<div class="card"><div class="card-icon">${it.icon}</div><div>${it.n}</div><div style="color:gold">${it.price}CR</div><button class="ui-btn" style="margin-top:5px; width:100%" onclick="buy('${k}')">COMPRAR</button></div>`;
         }
         document.getElementById('modal-shop').style.display='flex';
     }
 
     function buy(k) {
         const p = ITEMS[k].price;
-        if(game.credits>=p) {
-            game.credits-=p; game.inv[k]++;
-            document.getElementById('shop-cr-disp').innerText = game.credits;
-            renderMapUI();
-        } else alert("Créditos insuficientes");
+        if(game.credits>=p) { game.credits-=p; game.inv[k]++; document.getElementById('shop-cr-disp').innerText=game.credits; renderMapUI(); } else alert("No CR");
     }
 
     function openPokedex() {
+        document.getElementById('dex-list').style.display = 'grid'; document.getElementById('dex-detail').style.display = 'none';
         const l = document.getElementById('dex-list'); l.innerHTML='';
         RAW_DB.forEach((dbMon, i) => {
             const caught = game.pokedex.includes(i);
-            l.innerHTML += `
-            <div style="background:${caught?'#111':'#000'}; border:1px solid ${caught?'var(--neon-blue)':'#333'}; padding:5px; display:flex; align-items:center;">
-                <div style="width:30px; font-size:20px;">${caught ? dbMon.s : '❓'}</div>
-                <div style="color:${caught?'#fff':'#555'}">#${i} ${caught ? dbMon.n : 'UNKNOWN'}</div>
-                <div style="margin-left:auto; font-size:10px; color:#aaa;">${caught ? dbMon.t.toUpperCase() : ''}</div>
-            </div>`;
+            const viewBtn = caught ? `<button class="ui-btn" style="padding:2px 5px; font-size:9px;" onclick="viewDexEntry(${i})">VER</button>` : '';
+            l.innerHTML += `<div style="background:${caught?'#111':'#000'}; border:1px solid ${caught?'var(--neon-blue)':'#333'}; padding:5px; display:flex; align-items:center;"><div style="width:30px; font-size:20px;">${caught?dbMon.s:'❓'}</div><div style="color:${caught?'#fff':'#555'}; flex-grow:1;">#${i} ${caught?dbMon.n:'???'}</div>${viewBtn}</div>`;
         });
         document.getElementById('modal-dex').style.display='flex';
     }
 
-    function closeModal(id) { document.getElementById(id).style.display='none'; }
+    function viewDexEntry(id) {
+        document.getElementById('dex-list').style.display = 'none'; document.getElementById('dex-detail').style.display = 'block';
+        const m = RAW_DB[id];
+        document.getElementById('dd-sprite').innerText = m.s; document.getElementById('dd-name').innerText = m.n.toUpperCase();
+        document.getElementById('dd-desc').innerText = m.desc; document.getElementById('dd-type').innerText = m.t;
+        document.getElementById('dd-hp').innerText = "60 + (12 x Nivel)";
+    }
 
+    function backDex() { document.getElementById('dex-detail').style.display = 'none'; document.getElementById('dex-list').style.display = 'grid'; }
+    function runAway() {
+        if(game.enemy.boss) return log("¡No puedes huir!");
+        if(Math.random()>0.4) { log("Escapaste."); setTimeout(()=>switchView('map'),500); } else { log("Fallo escape."); setTimeout(processTurnEnd,500); }
+    }
+    function closeModal(id) { document.getElementById(id).style.display='none'; }
 </script>
 </body>
 </html>
