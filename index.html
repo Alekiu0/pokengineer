@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>POKENGINEER v23.0</title>
+    <title>POKENGINEER v25.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -16,6 +16,11 @@
             
             --font-head: 'Orbitron', sans-serif;
             --font-body: 'Rajdhani', sans-serif;
+
+            /* Variables Dinámicas de Mapa */
+            --map-wall: #222;
+            --map-floor: #050505;
+            --map-accent: #00f3ff;
         }
 
         body {
@@ -95,9 +100,15 @@
             align-content: center; justify-content: center;
         }
         .tile { display: flex; justify-content: center; align-items: center; font-size: 14px; position: relative; }
-        .tile-wall { background: #222; }
-        .tile-floor { background: #050505; }
-        .tile-grass { background: rgba(0, 243, 255, 0.05); border: 1px solid rgba(0, 243, 255, 0.15); }
+        
+        /* Estilos dinámicos del mapa */
+        .tile-wall { background: var(--map-wall); }
+        .tile-floor { background: var(--map-floor); }
+        .tile-grass { 
+            background: rgba(255, 255, 255, 0.05); 
+            border: 1px solid var(--map-accent); 
+            opacity: 0.8;
+        }
         .tile-boss { background: rgba(255, 0, 85, 0.2); border: 1px solid var(--neon-pink); animation: pulseRed 1s infinite; }
         
         .entity-player { font-size: 24px; z-index: 5; text-shadow: 0 0 10px var(--neon-blue); }
@@ -191,7 +202,7 @@
 
     <!-- PANTALLA INTRO -->
     <div id="intro-screen">
-        <div style="font-size:30px; margin-bottom:20px; color:var(--neon-blue); text-align:center;">💠 POKENGINEER v23</div>
+        <div style="font-size:30px; margin-bottom:20px; color:var(--neon-blue); text-align:center;">💠 POKENGINEER v25</div>
         
         <div id="story-display" class="typewriter-text"></div>
 
@@ -301,7 +312,6 @@
 
         <div id="controls">
             <div id="combat-menu" class="atk-grid"></div>
-            <!-- SE AGREGO EL BOTON DE CAMBIO -->
             <div style="display:grid; grid-template-rows:1fr 1fr 1fr; gap:2px;">
                 <button class="ui-btn" onclick="openBag()">🎒 ITEMS</button>
                 <button class="ui-btn" onclick="openTeam()">👥 CAMBIO</button>
@@ -351,23 +361,23 @@
     };
 
     const RAW_DB = [
-        // PISO 1 (0-9)
+        // PISO 1 (0-9) - Labs
         {n:"Bit Bug", s:"🐞", t:TYPES.PLANTA}, {n:"Wire Worm", s:"🐛", t:TYPES.MECH}, {n:"Sparky", s:"⚡", t:TYPES.ELEC},
         {n:"Pebble", s:"🪨", t:TYPES.MECH}, {n:"Drip", s:"💧", t:TYPES.AGUA}, {n:"Ember", s:"🔥", t:TYPES.FUEGO},
         {n:"Leafy", s:"🍃", t:TYPES.PLANTA}, {n:"Batty", s:"🦇", t:TYPES.DARK}, {n:"Rat-X", s:"🐀", t:TYPES.MECH}, {n:"Slime", s:"🦠", t:TYPES.AGUA},
-        // PISO 2 (10-19)
+        // PISO 2 (10-19) - Industrial
         {n:"Cyber Wolf", s:"🐺", t:TYPES.MECH}, {n:"Flame Fox", s:"🦊", t:TYPES.FUEGO}, {n:"Aqua Fish", s:"🐟", t:TYPES.AGUA},
         {n:"Thunder Bird", s:"🦅", t:TYPES.ELEC}, {n:"Vine Snake", s:"🐍", t:TYPES.PLANTA}, {n:"Ghost Shell", s:"👻", t:TYPES.DARK},
         {n:"Iron Crab", s:"🦀", t:TYPES.MECH}, {n:"Magma Ant", s:"🐜", t:TYPES.FUEGO}, {n:"Deep Squid", s:"🦑", t:TYPES.AGUA}, {n:"Zap Cat", s:"🐱", t:TYPES.ELEC},
-        // PISO 3 (20-29)
+        // PISO 3 (20-29) - Hydro
         {n:"Mech Gorilla", s:"🦍", t:TYPES.MECH}, {n:"Solar Lion", s:"🦁", t:TYPES.FUEGO}, {n:"Tsunami Shark", s:"🦈", t:TYPES.AGUA},
         {n:"Volt Bear", s:"🐻", t:TYPES.ELEC}, {n:"Forest Trex", s:"🦖", t:TYPES.PLANTA}, {n:"Shadow Owl", s:"🦉", t:TYPES.DARK},
         {n:"Steel Rhino", s:"🦏", t:TYPES.MECH}, {n:"Lava Golem", s:"👺", t:TYPES.FUEGO}, {n:"Ice Whale", s:"🐋", t:TYPES.AGUA}, {n:"Storm Hawk", s:"🦅", t:TYPES.ELEC},
-        // PISO 4 (30-39)
+        // PISO 4 (30-39) - Power Plant
         {n:"Plasma Dragon", s:"🐉", t:TYPES.ELEC}, {n:"Inferno Drake", s:"🐲", t:TYPES.FUEGO}, {n:"Bio Titan", s:"🦕", t:TYPES.PLANTA},
         {n:"Neon Tiger", s:"🐅", t:TYPES.ELEC}, {n:"Abyss Croc", s:"🐊", t:TYPES.AGUA}, {n:"Void Spirit", s:"👽", t:TYPES.DARK},
         {n:"Mecha Zilla", s:"🦎", t:TYPES.MECH}, {n:"Scorpion K", s:"🦂", t:TYPES.DARK}, {n:"Spider Web", s:"🕷️", t:TYPES.MECH}, {n:"Uni Horn", s:"🦄", t:TYPES.PLANTA},
-        // PISO 5 (40-49)
+        // PISO 5 (40-49) - The Core
         {n:"OMEGA", s:"🧿", t:TYPES.MECH}, {n:"PHOENIX", s:"🦅", t:TYPES.FUEGO}, {n:"KRAKEN", s:"🐙", t:TYPES.AGUA},
         {n:"ZEUS", s:"⚡", t:TYPES.ELEC}, {n:"GAIA", s:"🌳", t:TYPES.PLANTA}, {n:"HADES", s:"💀", t:TYPES.DARK},
         {n:"CHRONOS", s:"⏳", t:TYPES.MECH}, {n:"COSMOS", s:"🌌", t:TYPES.DARK}, {n:"SOL", s:"☀️", t:TYPES.FUEGO}, {n:"LUNA", s:"🌙", t:TYPES.DARK}
@@ -379,20 +389,19 @@
         'Oscuro': {p:70, pp:15, t:TYPES.DARK}, 'Ultimate': {p:120, pp:5, t:'normal'}
     };
 
-    // ITEM UPDATE: NUEVOS ITEMS
     const ITEMS = {
         'ball': {n:"Data Ball", price:100, icon:"🔵", rate:1},
         'ultra': {n:"Master Ball", price:1000, icon:"🟣", rate:3},
         'pot': {n:"Poción HP", price:200, icon:"💊", heal:50},
-        'maxpot': {n:"Refrig. Líq.", price:600, icon:"🧪", heal:9999}, // Nuevo
+        'maxpot': {n:"Refrig. Líq.", price:600, icon:"🧪", heal:9999},
         'revive': {n:"Kit Reinicio", price:500, icon:"♻️"},
-        'chip': {n:"Chip Overclock", price:1200, icon:"💾", xp:100} // Nuevo
+        'chip': {n:"Chip Overclock", price:1200, icon:"💾", xp:100}
     };
 
     /* === ESTADO DEL JUEGO === */
     let game = {
         playerName: "Engineer",
-        credits: 800, // Un poco más de inicio
+        credits: 800,
         floor: 1, team: [], active: 0, pokedex: [],
         inv: { ball:5, ultra:0, pot:3, maxpot:1, revive:0, chip:0 },
         playerX: 6, playerY: 6, mapData: [],
@@ -409,7 +418,7 @@
         if (charIndex < STORY_TEXT.length) {
             document.getElementById("story-display").innerHTML += STORY_TEXT.charAt(charIndex);
             charIndex++;
-            setTimeout(typeWriter, 30); // Velocidad de tipeo
+            setTimeout(typeWriter, 30);
         } else {
             setTimeout(() => {
                 document.getElementById('intro-form').classList.add('visible');
@@ -475,13 +484,51 @@
         l.classList.add('anim-flash');
         setTimeout(() => {
             callback();
-        }, 250); // Cambio de vista en el punto más blanco
+        }, 250); 
+    }
+
+    /* === GESTION DE TEMAS POR PISO === */
+    function applyFloorTheme() {
+        const r = document.documentElement.style;
+        const f = game.floor;
+        // PISO 1: Default (Tech)
+        if(f===1) {
+            r.setProperty('--map-wall', '#222');
+            r.setProperty('--map-floor', '#050505');
+            r.setProperty('--map-accent', '#00f3ff');
+        }
+        // PISO 2: Volcanic
+        else if(f===2) {
+            r.setProperty('--map-wall', '#310');
+            r.setProperty('--map-floor', '#100');
+            r.setProperty('--map-accent', '#ff4400');
+        }
+        // PISO 3: Hydro
+        else if(f===3) {
+            r.setProperty('--map-wall', '#002');
+            r.setProperty('--map-floor', '#001');
+            r.setProperty('--map-accent', '#0088ff');
+        }
+        // PISO 4: Power Plant
+        else if(f===4) {
+            r.setProperty('--map-wall', '#330');
+            r.setProperty('--map-floor', '#110');
+            r.setProperty('--map-accent', '#ffdd00');
+        }
+        // PISO 5: Core
+        else {
+            r.setProperty('--map-wall', '#202');
+            r.setProperty('--map-floor', '#000');
+            r.setProperty('--map-accent', '#bd00ff');
+        }
     }
 
     /* === MAPA === */
     function generateMap() {
         game.mapData = [];
         game.progress = 0; 
+        applyFloorTheme(); // Aplicar tema
+
         document.getElementById('map-container').style.gridTemplateColumns = `repeat(${MAP_SIZE}, 1fr)`;
         document.getElementById('map-container').style.gridTemplateRows = `repeat(${MAP_SIZE}, 1fr)`;
 
@@ -554,9 +601,11 @@
         if(lvl>20) mvs.push('Ultimate');
         
         let finalMoves = mvs.map(k=>({n:k, ...MOVES[k], maxPP:MOVES[k].pp, pp:MOVES[k].pp}));
+        
+        // SHINY RATE UP: AHORA ES 0.2 (20%)
         return { 
             id:id, ...d, lvl:lvl, maxHp:hp, hp:hp, xp:0, xpMax:lvl*50, 
-            moves:finalMoves, shiny: Math.random()<0.05
+            moves:finalMoves, shiny: Math.random()<0.20
         };
     }
 
@@ -570,10 +619,12 @@
             game.enemy.maxHp *= 2; game.enemy.hp = game.enemy.maxHp;
             game.enemy.boss = true;
         } else {
+            // RANGO DINAMICO POR PISO (Piso 1: 0-8, Piso 2: 10-18, etc)
             const minId = (game.floor-1)*10;
             const maxId = minId + 8; 
             id = Math.floor(Math.random()*(maxId-minId+1)) + minId;
             if(id >= RAW_DB.length) id = RAW_DB.length-1;
+            
             lvl = Math.max(1, (game.floor-1)*10 + Math.floor(Math.random()*8));
             game.enemy = createMon(id, lvl);
         }
@@ -634,18 +685,17 @@
     }
 
     function winBattle() {
-        const reward = game.enemy.lvl * 20;
+        const reward = game.enemy.lvl * 60;
         game.credits += reward;
         const p = game.team[game.active];
-        // XP BOOSTED (x2.5)
         const earnedXP = game.enemy.lvl * 25; 
         gainXp(p, earnedXP);
 
         if(game.enemy.boss) {
-            alert(`SECTOR ${game.floor} PURGADO.`);
+            alert(`¡SECTOR ${game.floor} PURGADO! \n\nINICIANDO ASCENSO AL PISO ${game.floor + 1}...`);
             game.floor++;
-            if(game.floor > 5) { alert("¡NÚCLEO REINICIADO!"); game.floor=1; location.reload(); return; }
-            generateMap();
+            if(game.floor > 5) { alert("¡NÚCLEO REINICIADO! ¡MISIÓN CUMPLIDA!"); game.floor=1; location.reload(); return; }
+            generateMap(); // Genera mapa con nuevo tema y nuevos pokes
         } else {
             game.progress++;
             game.mapData[game.playerY][game.playerX] = 0; 
@@ -742,7 +792,11 @@
         const inBattle = document.getElementById('view-battle').classList.contains('active');
         if(k.includes('ball')) {
             if(!inBattle) return alert("Solo combate");
-            if(game.enemy.boss) return alert("Objetivo Inmune");
+
+            if(game.enemy.boss) {
+                if(k !== 'ultra') return alert("ERROR: Blindaje de JEFE activo. Requiere Master Ball (Morada).");
+            }
+            
             game.inv[k]--;
             closeModal('modal-bag');
             log("Ejecutando captura...");
